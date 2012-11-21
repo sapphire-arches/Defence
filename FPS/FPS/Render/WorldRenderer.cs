@@ -75,9 +75,7 @@ namespace FPS.Render {
 			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateFromAxisAngle(Vector3.UnitX, -_pitch));
 			GL.UniformMatrix4(_projectionLoc, false, ref _projectionMatrix);
 			GL.UniformMatrix4(_modelviewLoc, false, ref _modelview);
-			GL.FrontFace(FrontFaceDirection.Cw);
 			_hmap.Render();
-			GL.FrontFace(FrontFaceDirection.Ccw);
 		}
 	}
 }

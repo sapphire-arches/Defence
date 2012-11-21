@@ -6,69 +6,70 @@ using OpenTK.Graphics.OpenGL;
 
 namespace FPS.Render {
 	public class HeightmapRenderer {
+		const int CHUNK_SIZE = 16;
 		HeightMap _for;
-		VertexArray[] _rows;
+		VertexArray[,] _chunks;
 
 		public HeightmapRenderer(HeightMap For) {
 			_for = For;
-			_rows = new VertexArray[_for.Width];
+			_chunks = new VertexArray[(_for.Width / 16 + 1), (_for.Height / 16 + 1)];
 			Perlin2D p2d = new Perlin2D(100);
-			for (int x = 0; x < _for.Width; ++x) {
-				//Height * 3 coords per vert * 3 verts per tri * 2 tris per square
-				float[] verts = new float[_for.Height * 3 * 3 * 2];
-				float[] color = new float[_for.Height * 3 * 3 * 2];
-				for (int y = 0; y < _for.Height; ++y) {
-					//Stride is 3 coords per vert * 6 verts per square
-					verts [(y * 18) + 00] = x;
-					verts [(y * 18) + 01] = _for [x, y];
-					verts [(y * 18) + 02] = y;
+			for (int cx = 0; cx < _for.Width / CHUNK_SIZE + 1; ++cx) {
+				for (int cy = 0; cy < _for.Height / CHUNK_SIZE + 1; ++cy) {
+					//number of quads in chunk * 2 tris per quad * 3 verts per tri * 3 coords per vert
+					float[] verts = new float[CHUNK_SIZE * CHUNK_SIZE * 18];
+					float[] color = new float[CHUNK_SIZE * CHUNK_SIZE * 18];
+					int basex = cx * CHUNK_SIZE;
+					int basey = cy * CHUNK_SIZE;
 
-					verts [(y * 18) + 03] = x + 1;
-					verts [(y * 18) + 04] = _for [x + 1, y];
-					verts [(y * 18) + 05] = y;
-					
-					verts [(y * 18) + 06] = x;
-					verts [(y * 18) + 07] = _for [x, y + 1];
-					verts [(y * 18) + 08] = y + 1;
-					
-					verts [(y * 18) + 09] = x;
-					verts [(y * 18) + 10] = _for [x, y + 1];
-					verts [(y * 18) + 11] = y + 1;
-					
-					verts [(y * 18) + 12] = x + 1;
-					verts [(y * 18) + 13] = _for [x + 1, y];
-					verts [(y * 18) + 14] = y;
+					for (int x = 0; x < CHUNK_SIZE; ++x) {
+						int xp = basex + x;
+						for (int y = 0; y < CHUNK_SIZE; ++y) {
+							int yp = basey + y;
+							verts [((x + CHUNK_SIZE * y) * 18) + 00] = xp + 0;
+							verts [((x + CHUNK_SIZE * y) * 18) + 01] = _for [xp + 0, yp + 0];
+							verts [((x + CHUNK_SIZE * y) * 18) + 02] = yp + 0;
+									
+							verts [((x + CHUNK_SIZE * y) * 18) + 03] = xp + 0;
+							verts [((x + CHUNK_SIZE * y) * 18) + 04] = _for [xp + 0, yp + 1];
+							verts [((x + CHUNK_SIZE * y) * 18) + 05] = yp + 1;
+									
+							verts [((x + CHUNK_SIZE * y) * 18) + 06] = xp + 1;
+							verts [((x + CHUNK_SIZE * y) * 18) + 07] = _for [xp + 1, yp + 0];
+							verts [((x + CHUNK_SIZE * y) * 18) + 08] = yp + 0;
 
-					verts [(y * 18) + 15] = x + 1;
-					verts [(y * 18) + 16] = _for [x + 1, y + 1];
-					verts [(y * 18) + 17] = y + 1;
+							verts [((x + CHUNK_SIZE * y) * 18) + 09] = xp + 1;
+							verts [((x + CHUNK_SIZE * y) * 18) + 10] = _for [xp + 1, yp + 0];
+							verts [((x + CHUNK_SIZE * y) * 18) + 11] = yp + 0;
+									
+							verts [((x + CHUNK_SIZE * y) * 18) + 12] = xp + 0;
+							verts [((x + CHUNK_SIZE * y) * 18) + 13] = _for [xp + 0, yp + 1];
+							verts [((x + CHUNK_SIZE * y) * 18) + 14] = yp + 1;
+									
+							verts [((x + CHUNK_SIZE * y) * 18) + 15] = xp + 1;
+							verts [((x + CHUNK_SIZE * y) * 18) + 16] = _for [xp + 1, yp + 1];
+							verts [((x + CHUNK_SIZE * y) * 18) + 17] = yp + 1;
 
-					for (int i = 0; i < 18; i += 3) {
-						color [y * 18 + i + 0] = 0;
-						color [y * 18 + i + 1] = (float)p2d [x * 0.1, y * 0.1] / 3f;
-						color [y * 18 + i + 2] = 0;
+							for (int i = 0; i < 18; i += 3) {
+								color [((x + CHUNK_SIZE * y) * 18) + i + 0] = 0;
+								color [((x + CHUNK_SIZE * y) * 18) + i + 1] = (float)p2d [xp * 0.1, yp * 0.1] / 3f;
+								color [((x + CHUNK_SIZE * y) * 18) + i + 2] = 0;
+							}
+						}
 					}
+
+					_chunks [cx, cy] = new VertexArray(verts, color, null, verts.Length / 3, BeginMode.Triangles);
 				}
-				_rows [x] = new VertexArray(verts, color, null, verts.Length / 3,
-				                            OpenTK.Graphics.OpenGL.BeginMode.Triangles);
-				Console.Write("[");
-				for (int i = 0; i < verts.Length / 3; i += 3) {
-					Console.Write(verts [i + 0]);
-					Console.Write(" ");
-					Console.Write(verts [i + 1]);
-					Console.Write(" ");
-					Console.Write(verts [i + 2]);
-					Console.Write(", ");
-				}
-				Console.WriteLine("]");
 			}
 		}
 
 		public void Render() {
 			GL.Enable(EnableCap.VertexArray);
 			GL.Enable(EnableCap.ColorArray);
-			for (int i = 0; i < _rows.Length; ++i) {
-				_rows [i].Draw();
+			for (int cx = 0; cx < _for.Width / CHUNK_SIZE + 1; ++cx) {
+				for (int cy = 0; cy < _for.Height / CHUNK_SIZE + 1; ++cy) {
+					_chunks [cx, cy].Draw();
+				}
 			}
 			GL.Disable(EnableCap.VertexArray);
 			GL.Enable(EnableCap.ColorArray);

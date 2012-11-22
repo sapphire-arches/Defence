@@ -1,6 +1,8 @@
 uniform mat4 modelview;
 uniform mat4 projection;
 
+
+
 void main (void) {
     gl_Position = projection * modelview * gl_Vertex;
     gl_FrontColor = gl_Color; //gl_Vertex / 10.0;

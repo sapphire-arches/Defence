@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Diagnostics;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
@@ -13,11 +14,14 @@ namespace FPS {
 		HeightMap _map;
 		WorldRenderer _ren;
 		Vector2 _mouse_delta;
+		Stopwatch _timer;
+		int _frame;
 
 		public MainClass() : base(800, 600, OpenTK.Graphics.GraphicsMode.Default, "Defend Rome") {
 		}
 
 		protected override void OnLoad(EventArgs e) {
+			long frequency = Stopwatch.Frequency;
 			_map = new HeightMap("res/map.map");
 			_world = new World(_map);
 			_ren = new WorldRenderer(_world, (float)Width / Height);
@@ -40,6 +44,7 @@ namespace FPS {
 				System.Windows.Forms.Cursor.Position.Y - Height / 2);
 			System.Windows.Forms.Cursor.Position = new Point(Width / 2, Height / 2);
 			System.Windows.Forms.Cursor.Hide();
+			_timer = new Stopwatch();
 		}
 
 		protected override void OnUpdateFrame(FrameEventArgs e) {
@@ -55,13 +60,14 @@ namespace FPS {
 			Vector3 pos = _ren.Pos;
 
 			if (Keyboard [Key.W]) {
-				pos.Z -= (float)Math.Cos(_ren.Yaw) * 0.1f;
-				pos.X -= (float)Math.Sin(_ren.Yaw) * 0.1f;
+				pos.Z -= (float)Math.Cos(_ren.Yaw) * 0.2f;
+				pos.X -= (float)Math.Sin(_ren.Yaw) * 0.2f;
 			}
 			if (Keyboard [Key.S]) {
-				pos.Z += (float)Math.Cos(_ren.Yaw) * 0.1f;
-				pos.X += (float)Math.Sin(_ren.Yaw) * 0.1f;
+				pos.Z += (float)Math.Cos(_ren.Yaw) * 0.2f;
+				pos.X += (float)Math.Sin(_ren.Yaw) * 0.2f;
 			}
+
 			if (Keyboard [Key.Q]) {
 				pos.Y -= 0.1f;
 				_ren.Pos = pos;
@@ -73,10 +79,17 @@ namespace FPS {
 		}
 
 		protected override void OnRenderFrame(FrameEventArgs e) {
+			_timer.Start();
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			_ren.Render();
 			GLUtil.PrintGLError();
 			SwapBuffers();
+			++_frame;
+			_timer.Stop();
+			if (_frame % 600 == 59) {
+				Console.WriteLine(_timer.ElapsedMilliseconds);
+				_timer.Reset();
+			}
 		}
 
 		protected override void OnResize(EventArgs e) {

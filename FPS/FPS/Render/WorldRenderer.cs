@@ -51,7 +51,7 @@ namespace FPS.Render {
 			get { return _aspect; }
 			set { 
 				_aspect = value;
-				_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(0.5 * _aspect * Math.PI), _aspect, 0.01f, 10);
+				_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(0.5 * _aspect * Math.PI), _aspect, 0.01f, 20);
 			}
 		}
 

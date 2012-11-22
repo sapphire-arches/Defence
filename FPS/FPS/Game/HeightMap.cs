@@ -20,8 +20,8 @@ namespace FPS.Game {
 		float[,] _map;
 
 		public HeightMap(string FName) {
-			this.Width = 32;
-			this.Height = 32;
+			this.Width = 128;
+			this.Height = 128;
 			this._map = new float[Width, Height];
 
 			Perlin2D p2d = new Perlin2D(100);
@@ -46,6 +46,39 @@ namespace FPS.Game {
 					return;
 				_map [X, Y] = value;
 			}
+		}
+
+		public float this [float X, float Y] {
+			get {
+				int ix = Floor(X);
+				int iy = Floor(Y);
+				float fx = X - ix;
+				float fy = Y - iy;
+
+				float d1 = this [ix + 0, iy + 0];
+				float d2 = this [ix + 1, iy + 0];
+				float d3 = this [ix + 0, iy + 1];
+				float d4 = this [ix + 1, iy + 1];
+
+				d1 = Inter(d1, d2, fx);
+				d2 = Inter(d3, d4, fx);
+
+				return Inter(d1, d2, fy);
+			}
+
+			private set {
+				throw new InvalidOperationException("You can't set that!");
+			}
+		}
+
+		private int Floor(float F) {
+			if (F < 0)
+				return (int)F - 1;
+			return (int)F;
+		}
+
+		private float Inter(float D1, float D2, float F) {
+			return D1 * (1 - F) + D2 * F;
 		}
 	}
 }

@@ -1,4 +1,4 @@
-#define DEBUG
+#define FOG
 
 void main(void) {
 #ifndef DEBUG

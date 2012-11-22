@@ -51,9 +51,9 @@ namespace FPS.Render {
 							verts [((x + CHUNK_SIZE * y) * 18) + 17] = yp + 1;
 
 							for (int i = 0; i < 18; i += 3) {
-								color [((x + CHUNK_SIZE * y) * 18) + i + 0] = 0;
-								color [((x + CHUNK_SIZE * y) * 18) + i + 1] = (float)p2d [xp * 0.1, yp * 0.1] / 3f;
-								color [((x + CHUNK_SIZE * y) * 18) + i + 2] = 0;
+								color [((x + CHUNK_SIZE * y) * 18) + i + 0] = (float)p2d [xp * 0.9, yp * 0.9] * 0.1f + 0.1f;
+								color [((x + CHUNK_SIZE * y) * 18) + i + 1] = (float)p2d [xp * 0.9, yp * 0.9] * 0.5f + 0.1f;
+								color [((x + CHUNK_SIZE * y) * 18) + i + 2] = (float)p2d [xp * 0.9, yp * 0.9] * 0.1f + 0.1f;
 							}
 						}
 					}

@@ -55,7 +55,8 @@ namespace FPS.Util {
 		}
 
 		private double Inter(double D1, double D2, double F) {
-			return D1 * (1 - F) + D2 * F;
+			double F2 = Math.Sin(F * Math.PI * 0.5);
+			return D1 * (1 - F2) + D2 * F2;
 		}
 	}
 }

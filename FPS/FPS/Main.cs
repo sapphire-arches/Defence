@@ -6,24 +6,29 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using FPS.GLInterface;
 using FPS.Game;
+using FPS.Game.Entity;
 using FPS.Render;
 
 namespace FPS {
 	public class MainClass  : GameWindow {
+		public readonly Vector3 CAM_OFFSET = new Vector3(0, 1, 0);
 		World _world;
 		HeightMap _map;
 		WorldRenderer _ren;
-		Vector2 _mouse_delta;
+		Vector2 _mouseDelta;
 		Stopwatch _timer;
 		int _frame;
+		PlayerEntity _pe;
+		bool _capMouse;
 
 		public MainClass() : base(800, 600, OpenTK.Graphics.GraphicsMode.Default, "Defend Rome") {
 		}
 
 		protected override void OnLoad(EventArgs e) {
-			long frequency = Stopwatch.Frequency;
 			_map = new HeightMap("res/map.map");
 			_world = new World(_map);
+			_pe = new PlayerEntity(new Vector3(5, 5, 5));
+			_world.Ents.AddFirst(_pe);
 			_ren = new WorldRenderer(_world, (float)Width / Height);
 			GL.ClearColor(OpenTK.Graphics.Color4.SkyBlue);
 			GL.Enable(EnableCap.DepthTest);
@@ -38,44 +43,38 @@ namespace FPS {
 			GL.Fog(FogParameter.FogEnd, 20f);
 			GL.Fog(FogParameter.FogStart, 10f);
 
-			_mouse_delta = new Vector2(0, 0);
-			_mouse_delta += new Vector2(
+			_mouseDelta = new Vector2(0, 0);
+			_mouseDelta += new Vector2(
 				System.Windows.Forms.Cursor.Position.X - Width / 2,
 				System.Windows.Forms.Cursor.Position.Y - Height / 2);
 			System.Windows.Forms.Cursor.Position = new Point(Width / 2, Height / 2);
 			System.Windows.Forms.Cursor.Hide();
 			_timer = new Stopwatch();
+			_capMouse = true;
 		}
 
 		protected override void OnUpdateFrame(FrameEventArgs e) {
-			base.OnUpdateFrame(e);
-			_mouse_delta += new Vector2(
-				System.Windows.Forms.Cursor.Position.X - Width / 2,
-				System.Windows.Forms.Cursor.Position.Y - Height / 2);
-			System.Windows.Forms.Cursor.Position = new Point(Width / 2, Height / 2);
-
-			_ren.Yaw = _mouse_delta.X * 0.005f;
-			_ren.Pitch = _mouse_delta.Y * 0.005f;
-
-			Vector3 pos = _ren.Pos;
-
-			if (Keyboard [Key.W]) {
-				pos.Z -= (float)Math.Cos(_ren.Yaw) * 0.2f;
-				pos.X -= (float)Math.Sin(_ren.Yaw) * 0.2f;
-			}
-			if (Keyboard [Key.S]) {
-				pos.Z += (float)Math.Cos(_ren.Yaw) * 0.2f;
-				pos.X += (float)Math.Sin(_ren.Yaw) * 0.2f;
+			if (Keyboard [Key.Escape]) {
+				_capMouse = false;
 			}
 
-			if (Keyboard [Key.Q]) {
-				pos.Y -= 0.1f;
-				_ren.Pos = pos;
+			if (Keyboard [Key.J]) {
+				_capMouse = true;
 			}
-			if (Keyboard [Key.E]) {
-				pos.Y += 0.1f;
+
+			if (_capMouse) {
+				_mouseDelta += new Vector2(
+					System.Windows.Forms.Cursor.Position.X - Width / 2,
+					System.Windows.Forms.Cursor.Position.Y - Height / 2);
+				System.Windows.Forms.Cursor.Position = new Point(Width / 2, Height / 2);
 			}
-			_ren.Pos = pos;
+
+			_pe.Move(Keyboard, _mouseDelta);
+			_world.Tick(1);
+
+			_ren.Pos = Vector3.Add(_pe.Pos, CAM_OFFSET);
+			_ren.Pitch = _pe.Pitch;
+			_ren.Yaw = _pe.Yaw;
 		}
 
 		protected override void OnRenderFrame(FrameEventArgs e) {
@@ -86,8 +85,8 @@ namespace FPS {
 			SwapBuffers();
 			++_frame;
 			_timer.Stop();
-			if (_frame % 600 == 59) {
-				Console.WriteLine(_timer.ElapsedMilliseconds);
+			if (_frame % 600 == 599) {
+				Console.WriteLine(_timer.ElapsedMilliseconds / (10000f));
 				_timer.Reset();
 			}
 		}

@@ -1,5 +1,6 @@
 using System;
 using FPS.Game;
+using FPS.Game.Entity;
 using FPS.GLInterface;
 using OpenTK.Graphics.OpenGL;
 using OpenTK;
@@ -76,6 +77,9 @@ namespace FPS.Render {
 			GL.UniformMatrix4(_projectionLoc, false, ref _projectionMatrix);
 			GL.UniformMatrix4(_modelviewLoc, false, ref _modelview);
 			_hmap.Render();
+			foreach (IEntity ent in _for.Ents) {
+				ent.Render();
+			}
 		}
 	}
 }

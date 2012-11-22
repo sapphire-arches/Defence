@@ -38,7 +38,13 @@ namespace FPS.Game {
 				if (X >= Width || X < 0 || Y >= Height || Y < 0) {
 					return 0;
 				}
-				return _map [X, Y];
+				float val = 0;
+				try {
+					val = _map [X, Y];
+				} catch (IndexOutOfRangeException ex) {
+					Console.WriteLine("{0} {1}", X, Y);
+				}
+				return val;
 			}
 
 			private set {

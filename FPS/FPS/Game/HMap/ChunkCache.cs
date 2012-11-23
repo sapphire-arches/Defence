@@ -28,7 +28,7 @@ namespace FPS.Game.HMap {
 							int xxx = xx + X * Chunk.CHUNK_SIZE;
 							int yyy = yy + Y * Chunk.CHUNK_SIZE;
 							temp [xx, yy] = (float)_p2d [xxx * 0.1, yyy * 0.1] * 3f;
-							temp [xx, yy] += (float)_p2d [xxx * 0.025, yyy * 0.025] * 30f;
+							temp [xx, yy] += (float)_p2d [xxx * 0.025, yyy * 0.025] * 30f - 15f;
 						}
 					}
 					tr = new Chunk(X, Y, temp);

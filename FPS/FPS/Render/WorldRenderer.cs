@@ -12,6 +12,7 @@ namespace FPS.Render {
 		World _for;
 		HeightmapRenderer _hmap;
 		ShaderProgram _simple;
+		ShaderProgram _underwater;
 		int _projectionLoc;
 		Matrix4 _projectionMatrix;
 		int _modelviewLoc;
@@ -62,6 +63,7 @@ namespace FPS.Render {
 			_for = For;
 			_hmap = new HeightmapRenderer(_for.Terrain);
 			_simple = new ShaderProgram("res/base.vert", "res/base.frag");
+			_underwater = new ShaderProgram("res/base.vert", "res/water.frag");
 			_projectionLoc = _simple.GetUniformLocation("projection");
 			_modelviewLoc = _simple.GetUniformLocation("modelview");
 			_aspect = Aspect;
@@ -71,7 +73,10 @@ namespace FPS.Render {
 		}
 
 		public void Render() {
-			_simple.Use();
+			if (_pos.Y > 0)
+				_simple.Use();
+			else
+				_underwater.Use();
 			_modelview = Matrix4.Identity;
 			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateTranslation(-_pos.X, -_pos.Y, -_pos.Z));
 			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateFromAxisAngle(Vector3.UnitY, -_yaw));

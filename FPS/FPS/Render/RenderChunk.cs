@@ -64,10 +64,16 @@ namespace FPS.Render {
 
 					for (int i = 0; i < 18; i += 3) {
 						float f1 = (float)Color [xp * 0.5, yp * 0.5];
-						_color [basei + i + 0] = f1 * 0.1f + 0.1f;
-						_color [basei + i + 1] = f1 * 0.9f + 0.1f;
-						_color [basei + i + 2] = f1 * 0.1f + 0.1f;
-						//_verts [basei + i + 1] = 0;
+						if (_verts [basei + i + 1] > 0) {
+							_color [basei + i + 0] = f1 * 0.1f + 0.1f;
+							_color [basei + i + 1] = f1 * 0.9f + 0.1f;
+							_color [basei + i + 2] = f1 * 0.1f + 0.1f;
+						} else {
+							_color [basei + i + 0] = f1 * 0.1f + 0.3f;
+							_color [basei + i + 1] = f1 * 0.1f + 0.3f;
+							_color [basei + i + 2] = f1 * 0.3f + 0.7f;
+							//_verts [basei + i + 1] = 0;
+						}
 					}
 				}
 			}

@@ -7,6 +7,8 @@ using OpenTK;
 
 namespace FPS.Render {
 	public class WorldRenderer {
+		public static readonly float MAX_DEPTH = 32f;
+
 		World _for;
 		HeightmapRenderer _hmap;
 		ShaderProgram _simple;
@@ -52,7 +54,7 @@ namespace FPS.Render {
 			get { return _aspect; }
 			set { 
 				_aspect = value;
-				_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(0.5 * _aspect * Math.PI), _aspect, 0.01f, 20);
+				_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(0.5 * _aspect * Math.PI), _aspect, 0.01f, MAX_DEPTH);
 			}
 		}
 
@@ -63,7 +65,7 @@ namespace FPS.Render {
 			_projectionLoc = _simple.GetUniformLocation("projection");
 			_modelviewLoc = _simple.GetUniformLocation("modelview");
 			_aspect = Aspect;
-			_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(0.25 * _aspect * Math.PI), _aspect, 0.01f, 20);
+			_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(0.25 * _aspect * Math.PI), _aspect, 0.01f, MAX_DEPTH);
 			_modelview = Matrix4.CreateTranslation(-10f, -5f, -10f);
 			_pos = new Vector3(10, 2, 10);
 		}

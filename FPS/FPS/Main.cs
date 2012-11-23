@@ -7,6 +7,7 @@ using OpenTK.Input;
 using FPS.GLInterface;
 using FPS.Game;
 using FPS.Game.Entity;
+using FPS.Game.HMap;
 using FPS.Render;
 
 namespace FPS {
@@ -40,7 +41,7 @@ namespace FPS {
 				OpenTK.Graphics.Color4.SkyBlue.A
 			};
 			GL.Fog(FogParameter.FogColor, fogColor);
-			GL.Fog(FogParameter.FogEnd, 20f);
+			GL.Fog(FogParameter.FogEnd, WorldRenderer.MAX_DEPTH);
 			GL.Fog(FogParameter.FogStart, 10f);
 
 			_mouseDelta = new Vector2(0, 0);

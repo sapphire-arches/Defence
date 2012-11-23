@@ -1,5 +1,6 @@
 using System;
 using FPS.Game;
+using FPS.Game.HMap;
 using FPS.GLInterface;
 using FPS.Util;
 using OpenTK.Graphics.OpenGL;

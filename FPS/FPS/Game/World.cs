@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FPS.Game.Entity;
+using FPS.Game.HMap;
 using OpenTK;
 
 namespace FPS.Game {

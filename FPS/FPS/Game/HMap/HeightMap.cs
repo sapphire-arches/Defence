@@ -2,10 +2,11 @@ using System;
 using System.IO;
 using FPS.Util;
 
-namespace FPS.Game {
+namespace FPS.Game.HMap {
 	public class HeightMap {
 		int _width;
 		int _height;
+		ChunkCache _cache;
 
 		public int Width {
 			get { return _width; }
@@ -17,40 +18,38 @@ namespace FPS.Game {
 			private set { _height = value; }
 		}
 
-		float[,] _map;
-
 		public HeightMap(string FName) {
 			this.Width = 128;
 			this.Height = 128;
-			this._map = new float[Width, Height];
-
 			Perlin2D p2d = new Perlin2D(100);
-
-			for (int x = 0; x < Width; ++x) {
-				for (int y = 0; y < Height; ++y) {
-					this [x, y] = (float)p2d [x * 0.1, y * 0.1] * 5f;
-				}
-			}
+			this._cache = new ChunkCache(p2d);
 		}
 
 		public float this [int X, int Y] {
 			get {
-				if (X >= Width || X < 0 || Y >= Height || Y < 0) {
-					return 0;
-				}
-				float val = 0;
-				try {
-					val = _map [X, Y];
-				} catch (IndexOutOfRangeException ex) {
-					Console.WriteLine("{0} {1}", X, Y);
-				}
-				return val;
+				int cx = X / Chunk.CHUNK_SIZE;
+				int cy = Y / Chunk.CHUNK_SIZE;
+				int lx = X - (cx * Chunk.CHUNK_SIZE);
+				int ly = Y - (cy * Chunk.CHUNK_SIZE);
+
+				if (lx < 0)
+					lx += Chunk.CHUNK_SIZE;
+				if (ly < 0)
+					ly += Chunk.CHUNK_SIZE;
+				return _cache [cx, cy] [lx, ly];
 			}
 
 			private set {
-				if (X >= Width || X < 0 || Y >= Height || Y < 0)
-					return;
-				_map [X, Y] = value;
+				int cx = X / Chunk.CHUNK_SIZE;
+				int cy = Y / Chunk.CHUNK_SIZE;
+				int lx = X - (cx * Chunk.CHUNK_SIZE);
+				int ly = Y - (cy * Chunk.CHUNK_SIZE);
+
+				if (lx < 0)
+					lx += Chunk.CHUNK_SIZE;
+				if (ly < 0)
+					ly += Chunk.CHUNK_SIZE;
+				_cache [cx, cy] [lx, ly] = value;
 			}
 		}
 

@@ -7,7 +7,7 @@ using OpenTK;
 
 namespace FPS.Render {
 	public class WorldRenderer {
-		public static readonly float MAX_DEPTH = 32f;
+		public static readonly float MAX_DEPTH = 128f;
 
 		World _for;
 		HeightmapRenderer _hmap;
@@ -78,7 +78,7 @@ namespace FPS.Render {
 			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateFromAxisAngle(Vector3.UnitX, -_pitch));
 			GL.UniformMatrix4(_projectionLoc, false, ref _projectionMatrix);
 			GL.UniformMatrix4(_modelviewLoc, false, ref _modelview);
-			_hmap.Render();
+			_hmap.Render(_pos.X, _pos.Z);
 			foreach (IEntity ent in _for.Ents) {
 				ent.Render();
 			}

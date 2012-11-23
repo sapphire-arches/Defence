@@ -20,16 +20,6 @@ namespace FPS.Game {
 			private set { _ents = value; }
 		}
 
-		public int Heigth {
-			get { return _terrain.Height; }
-			private set { ;}
-		}
-
-		public int Width {
-			get { return _terrain.Width; }
-			private set { ;}
-		}
-
 		public World(HeightMap Terrain) {
 			_terrain = Terrain;
 			_ents = new LinkedList<IEntity>();

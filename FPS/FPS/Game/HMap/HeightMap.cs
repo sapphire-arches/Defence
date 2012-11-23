@@ -4,23 +4,9 @@ using FPS.Util;
 
 namespace FPS.Game.HMap {
 	public class HeightMap {
-		int _width;
-		int _height;
 		ChunkCache _cache;
 
-		public int Width {
-			get { return _width; }
-			private set { _width = value; }
-		}
-
-		public int Height {
-			get { return _height; }
-			private set { _height = value; }
-		}
-
 		public HeightMap(string FName) {
-			this.Width = 128;
-			this.Height = 128;
 			Perlin2D p2d = new Perlin2D(100);
 			this._cache = new ChunkCache(p2d);
 		}
@@ -29,26 +15,24 @@ namespace FPS.Game.HMap {
 			get {
 				int cx = X / Chunk.CHUNK_SIZE;
 				int cy = Y / Chunk.CHUNK_SIZE;
-				int lx = X - (cx * Chunk.CHUNK_SIZE);
-				int ly = Y - (cy * Chunk.CHUNK_SIZE);
-
-				if (lx < 0)
-					lx += Chunk.CHUNK_SIZE;
-				if (ly < 0)
-					ly += Chunk.CHUNK_SIZE;
+				int lx = X % Chunk.CHUNK_SIZE;
+				int ly = Y % Chunk.CHUNK_SIZE;
+				if (X < 0 && lx != 0)
+					--cx;
+				if (Y < 0 && ly != 0)
+					--cy;
 				return _cache [cx, cy] [lx, ly];
 			}
 
 			private set {
 				int cx = X / Chunk.CHUNK_SIZE;
 				int cy = Y / Chunk.CHUNK_SIZE;
-				int lx = X - (cx * Chunk.CHUNK_SIZE);
-				int ly = Y - (cy * Chunk.CHUNK_SIZE);
-
-				if (lx < 0)
-					lx += Chunk.CHUNK_SIZE;
-				if (ly < 0)
-					ly += Chunk.CHUNK_SIZE;
+				int lx = X % Chunk.CHUNK_SIZE;
+				int ly = Y % Chunk.CHUNK_SIZE;
+				if (X < 0 && lx != 0)
+					--cx;
+				if (Y < 0 && ly != 0)
+					--cy;
 				_cache [cx, cy] [lx, ly] = value;
 			}
 		}

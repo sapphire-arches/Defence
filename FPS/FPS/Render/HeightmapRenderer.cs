@@ -7,69 +7,36 @@ using OpenTK.Graphics.OpenGL;
 
 namespace FPS.Render {
 	public class HeightmapRenderer {
-		const int CHUNK_SIZE = 16;
+		public static readonly int CHUNK_SIZE = Chunk.CHUNK_SIZE;
+		public static readonly int NUM_RENDER_CHUNKS = 16;
 		HeightMap _for;
-		VertexArray[,] _chunks;
+		Perlin2D _p2d;
+		RenderChunk[,] _renchunks;
 
 		public HeightmapRenderer(HeightMap For) {
 			_for = For;
-			_chunks = new VertexArray[(_for.Width / 16 + 1), (_for.Height / 16 + 1)];
-			Perlin2D p2d = new Perlin2D(100);
-			for (int cx = 0; cx < _for.Width / CHUNK_SIZE + 1; ++cx) {
-				for (int cy = 0; cy < _for.Height / CHUNK_SIZE + 1; ++cy) {
-					//number of quads in chunk * 2 tris per quad * 3 verts per tri * 3 coords per vert
-					float[] verts = new float[CHUNK_SIZE * CHUNK_SIZE * 18];
-					float[] color = new float[CHUNK_SIZE * CHUNK_SIZE * 18];
-					int basex = cx * CHUNK_SIZE;
-					int basey = cy * CHUNK_SIZE;
-
-					for (int x = 0; x < CHUNK_SIZE; ++x) {
-						int xp = basex + x;
-						for (int y = 0; y < CHUNK_SIZE; ++y) {
-							int yp = basey + y;
-							verts [((x + CHUNK_SIZE * y) * 18) + 00] = xp + 0;
-							verts [((x + CHUNK_SIZE * y) * 18) + 01] = _for [xp + 0, yp + 0];
-							verts [((x + CHUNK_SIZE * y) * 18) + 02] = yp + 0;
-									
-							verts [((x + CHUNK_SIZE * y) * 18) + 03] = xp + 0;
-							verts [((x + CHUNK_SIZE * y) * 18) + 04] = _for [xp + 0, yp + 1];
-							verts [((x + CHUNK_SIZE * y) * 18) + 05] = yp + 1;
-									
-							verts [((x + CHUNK_SIZE * y) * 18) + 06] = xp + 1;
-							verts [((x + CHUNK_SIZE * y) * 18) + 07] = _for [xp + 1, yp + 0];
-							verts [((x + CHUNK_SIZE * y) * 18) + 08] = yp + 0;
-
-							verts [((x + CHUNK_SIZE * y) * 18) + 09] = xp + 1;
-							verts [((x + CHUNK_SIZE * y) * 18) + 10] = _for [xp + 1, yp + 0];
-							verts [((x + CHUNK_SIZE * y) * 18) + 11] = yp + 0;
-									
-							verts [((x + CHUNK_SIZE * y) * 18) + 12] = xp + 0;
-							verts [((x + CHUNK_SIZE * y) * 18) + 13] = _for [xp + 0, yp + 1];
-							verts [((x + CHUNK_SIZE * y) * 18) + 14] = yp + 1;
-									
-							verts [((x + CHUNK_SIZE * y) * 18) + 15] = xp + 1;
-							verts [((x + CHUNK_SIZE * y) * 18) + 16] = _for [xp + 1, yp + 1];
-							verts [((x + CHUNK_SIZE * y) * 18) + 17] = yp + 1;
-
-							for (int i = 0; i < 18; i += 3) {
-								color [((x + CHUNK_SIZE * y) * 18) + i + 0] = (float)p2d [xp * 0.9, yp * 0.9] * 0.1f + 0.1f;
-								color [((x + CHUNK_SIZE * y) * 18) + i + 1] = (float)p2d [xp * 0.9, yp * 0.9] * 0.5f + 0.1f;
-								color [((x + CHUNK_SIZE * y) * 18) + i + 2] = (float)p2d [xp * 0.9, yp * 0.9] * 0.1f + 0.1f;
-							}
-						}
-					}
-
-					_chunks [cx, cy] = new VertexArray(verts, color, null, verts.Length / 3, BeginMode.Triangles);
-				}
-			}
+			_p2d = new Perlin2D(100);
+			_renchunks = new RenderChunk[NUM_RENDER_CHUNKS, NUM_RENDER_CHUNKS];
 		}
 
-		public void Render() {
+		public void Render(float X, float Y) {
 			GL.Enable(EnableCap.VertexArray);
 			GL.Enable(EnableCap.ColorArray);
-			for (int cx = 0; cx < _for.Width / CHUNK_SIZE + 1; ++cx) {
-				for (int cy = 0; cy < _for.Height / CHUNK_SIZE + 1; ++cy) {
-					_chunks [cx, cy].Draw();
+
+			int mincx = (int)(X / CHUNK_SIZE) - 4;
+			int mincy = (int)(Y / CHUNK_SIZE) - 4;
+
+			for (int cx = mincx; cx < mincx + 8; ++cx) {
+				for (int cy = mincy; cy < mincy + 8; ++cy) {
+					int x = cx % NUM_RENDER_CHUNKS;
+					int y = cy % NUM_RENDER_CHUNKS;
+					if (x < 0)
+						x += NUM_RENDER_CHUNKS;
+					if (y < 0)
+						y += NUM_RENDER_CHUNKS;
+					if (_renchunks [x, y] == null || _renchunks [x, y].X != cx || _renchunks [x, y].Y != cy)
+						_renchunks [x, y] = new RenderChunk(_for, _p2d, cx, cy);
+					_renchunks [x, y].Render();
 				}
 			}
 			GL.Disable(EnableCap.VertexArray);

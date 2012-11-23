@@ -28,7 +28,7 @@ namespace FPS {
 		protected override void OnLoad(EventArgs e) {
 			_map = new HeightMap("res/map.map");
 			_world = new World(_map);
-			_pe = new PlayerEntity(new Vector3(5, 5, 5));
+			_pe = new PlayerEntity(new Vector3(0, 20, 0));
 			_world.Ents.AddFirst(_pe);
 			_ren = new WorldRenderer(_world, (float)Width / Height);
 			GL.ClearColor(OpenTK.Graphics.Color4.SkyBlue);
@@ -86,8 +86,8 @@ namespace FPS {
 			SwapBuffers();
 			++_frame;
 			_timer.Stop();
-			if (_frame % 600 == 599) {
-				Console.WriteLine(_timer.ElapsedMilliseconds / (10000f));
+			if (_frame % 60 == 59) {
+				Console.WriteLine(1000f / _timer.ElapsedMilliseconds);
 				_timer.Reset();
 			}
 		}

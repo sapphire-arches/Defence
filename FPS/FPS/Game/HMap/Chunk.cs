@@ -23,12 +23,20 @@ namespace FPS.Game.HMap {
 			_data = Data;
 		}
 
-		public float this [int X, int Y] {
+		public float this [int LX, int LY] {
 			get {
-				return _data [X, Y];
+				if (LX < 0)
+					LX += CHUNK_SIZE;
+				if (LY < 0)
+					LY += CHUNK_SIZE;
+				return _data [LX, LY];
 			}
 			set {
-				_data [X, Y] = value;
+				if (LX < 0)
+					LX += CHUNK_SIZE;
+				if (LY < 0)
+					LY += CHUNK_SIZE;
+				_data [LX, LY] = value;
 			}
 		}
 
@@ -43,11 +51,6 @@ namespace FPS.Game.HMap {
 		public override int GetHashCode() {
 			return (_x * 3) ^ _y;
 		}
-	}
-
-	public class ChunkPos {
-		int _x, _y;
-
 	}
 }
 

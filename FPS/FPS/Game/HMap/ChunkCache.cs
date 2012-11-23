@@ -5,11 +5,11 @@ namespace FPS.Game.HMap {
 	public class ChunkCache {
 		public static readonly int NUM_CHUNKS = 16;
 		Chunk[,] _chunks;
-		Perlin2D _p2d;
+		IGenerator _gen;
 
-		public ChunkCache(Perlin2D Source) {
+		public ChunkCache(IGenerator Source) {
 			_chunks = new Chunk[NUM_CHUNKS, NUM_CHUNKS];
-			_p2d = Source;
+			_gen = Source;
 		}
 
 		public Chunk this [int X, int Y] {
@@ -27,8 +27,7 @@ namespace FPS.Game.HMap {
 						for (int yy = 0; yy < Chunk.CHUNK_SIZE; ++yy) {
 							int xxx = xx + X * Chunk.CHUNK_SIZE;
 							int yyy = yy + Y * Chunk.CHUNK_SIZE;
-							temp [xx, yy] = (float)_p2d [xxx * 0.1, yyy * 0.1] * 3f;
-							temp [xx, yy] += (float)_p2d [xxx * 0.025, yyy * 0.025] * 30f - 15f;
+							temp [xx, yy] = _gen.GetHeight(xxx, yyy);
 						}
 					}
 					tr = new Chunk(X, Y, temp);

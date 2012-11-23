@@ -8,7 +8,7 @@ namespace FPS.Game.HMap {
 
 		public HeightMap(string FName) {
 			Perlin2D p2d = new Perlin2D(100);
-			this._cache = new ChunkCache(p2d);
+			this._cache = new ChunkCache(new IslandGenerator(p2d));
 		}
 
 		public float this [int X, int Y] {

@@ -87,7 +87,7 @@ namespace FPS {
 			++_frame;
 			_timer.Stop();
 			if (_frame % 60 == 59) {
-				Console.WriteLine(1000f / _timer.ElapsedMilliseconds);
+				Console.WriteLine((float)Stopwatch.Frequency / (_timer.ElapsedTicks / 60f));
 				_timer.Reset();
 			}
 		}

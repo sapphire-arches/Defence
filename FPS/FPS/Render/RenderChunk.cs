@@ -13,6 +13,7 @@ namespace FPS.Render {
 		bool _water;
 		float[] _wverts;
 		float[] _wcolor;
+		int _lod;
 
 		public int X {
 			get { return _cx; }
@@ -24,11 +25,17 @@ namespace FPS.Render {
 			private set { ;}
 		}
 
-		public RenderChunk(HeightMap In, Perlin2D Color, int CX, int CY) {
-			//CHUNK_SIZE squared squares * 2 tris per square * 3 verts per tri * 3 coords per vert.
-			_verts = new float[CHUNK_SIZE * CHUNK_SIZE * 2 * 3 * 3];
-			//CHUNK_SIZE squared squares * 2 tris per square * 3 verts per tri * 3 colors per vert.
-			_color = new float[CHUNK_SIZE * CHUNK_SIZE * 2 * 3 * 3];
+		public int LOD {
+			get { return _lod; }
+			set { _lod = value;}
+		}
+
+		public RenderChunk(HeightMap In, Perlin2D Color, int CX, int CY, int Level) {
+			_lod = Level;
+			//LOD squared squares * 2 tris per square * 3 verts per tri * 3 coords per vert.
+			_verts = new float[_lod * _lod * 2 * 3 * 3];
+			//LOD squared squares * 2 tris per square * 3 verts per tri * 3 colors per vert.
+			_color = new float[_lod * _lod * 2 * 3 * 3];
 			
 			_cx = CX;
 			_cy = CY;
@@ -36,38 +43,42 @@ namespace FPS.Render {
 			int basex = _cx * CHUNK_SIZE;
 			int basey = _cy * CHUNK_SIZE;
 
-			for (int x = 0; x < CHUNK_SIZE; ++x) {
-				int xp = basex + x;
-				for (int y = 0; y < CHUNK_SIZE; ++y) {
-					int yp = basey + y;
-					int basei = ((x + CHUNK_SIZE * y) * 18);
+			int itr = CHUNK_SIZE / _lod;
+
+			for (int x = 0; x < _lod; ++x) {
+				int xp = basex + x * itr;
+				for (int y = 0; y < _lod; ++y) {
+					int yp = basey + y * itr;
+					int basei = ((x + _lod * y) * 18);
 					_verts [basei + 00] = xp + 0;
 					_verts [basei + 01] = In [xp + 0, yp + 0];
 					_verts [basei + 02] = yp + 0;
 
 					_verts [basei + 03] = xp + 0;
-					_verts [basei + 04] = In [xp + 0, yp + 1];
-					_verts [basei + 05] = yp + 1;
+					_verts [basei + 04] = In [xp + 0, yp + itr];
+					_verts [basei + 05] = yp + itr;
 
-					_verts [basei + 06] = xp + 1;
-					_verts [basei + 07] = In [xp + 1, yp + 0];
+					_verts [basei + 06] = xp + itr;
+					_verts [basei + 07] = In [xp + itr, yp + 0];
 					_verts [basei + 08] = yp + 0;
 
-					_verts [basei + 09] = xp + 1;
-					_verts [basei + 10] = In [xp + 1, yp + 0];
+					_verts [basei + 09] = xp + itr;
+					_verts [basei + 10] = In [xp + itr, yp + 0];
 					_verts [basei + 11] = yp + 0;
 
 					_verts [basei + 12] = xp + 0;
-					_verts [basei + 13] = In [xp + 0, yp + 1];
-					_verts [basei + 14] = yp + 1;
+					_verts [basei + 13] = In [xp + 0, yp + itr];
+					_verts [basei + 14] = yp + itr;
 
-					_verts [basei + 15] = xp + 1;
-					_verts [basei + 16] = In [xp + 1, yp + 1];
-					_verts [basei + 17] = yp + 1;
+					_verts [basei + 15] = xp + itr;
+					_verts [basei + 16] = In [xp + itr, yp + itr];
+					_verts [basei + 17] = yp + itr;
 
 					for (int i = 0; i < 18; i += 3) {
-						float f1 = (float)Color [xp * 0.5, yp * 0.5];
-						if (_verts [basei + i + 1] > 0) {
+						float xx = _verts [basei + i + 0];
+						float zz = _verts [basei + i + 2];
+						float f1 = (float)Color [xx * 0.5, zz * 0.5];
+						if (_verts [basei + i + 1] >= 0) {
 							_color [basei + i + 0] = f1 * 0.05f + 0.2f;
 							_color [basei + i + 1] = f1 * 0.8f + 0.2f;
 							_color [basei + i + 2] = f1 * 0.05f + 0.2f;

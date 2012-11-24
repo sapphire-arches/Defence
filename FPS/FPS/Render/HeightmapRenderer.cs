@@ -23,24 +23,54 @@ namespace FPS.Render {
 			GL.Enable(EnableCap.VertexArray);
 			GL.Enable(EnableCap.ColorArray);
 
-			int mincx = (int)(X / CHUNK_SIZE) - 4;
-			int mincy = (int)(Y / CHUNK_SIZE) - 4;
+			int mincx = Floor(X / CHUNK_SIZE) - 4;
+			int mincy = Floor(Y / CHUNK_SIZE) - 4;
 
-			for (int cx = mincx; cx < mincx + 8; ++cx) {
-				for (int cy = mincy; cy < mincy + 8; ++cy) {
+			for (int cx = mincx; cx < mincx + 9; ++cx) {
+				for (int cy = mincy; cy < mincy + 9; ++cy) {
+
+					int cox = cx - mincx;
+					int coy = cy - mincy;
+
+					cox = Abs(cox - 4);
+					coy = Abs(coy - 4);
+					int d = cox + coy;
+					--d;
+					if (d < 0)
+						d = 0;
+					if (cox == 1 && coy == 1)
+						d = 0;
+
+					int LOD = 32;
+					LOD >>= d;
+					if (LOD < 1)
+						LOD = 1;
+					
 					int x = cx % NUM_RENDER_CHUNKS;
 					int y = cy % NUM_RENDER_CHUNKS;
 					if (x < 0)
 						x += NUM_RENDER_CHUNKS;
 					if (y < 0)
 						y += NUM_RENDER_CHUNKS;
-					if (_renchunks [x, y] == null || _renchunks [x, y].X != cx || _renchunks [x, y].Y != cy)
-						_renchunks [x, y] = new RenderChunk(_for, _p2d, cx, cy);
+					if (_renchunks [x, y] == null || _renchunks [x, y].X != cx || _renchunks [x, y].Y != cy || _renchunks [x, y].LOD != LOD)
+						_renchunks [x, y] = new RenderChunk(_for, _p2d, cx, cy, LOD);
 					_renchunks [x, y].Render();
 				}
 			}
 			GL.Disable(EnableCap.VertexArray);
 			GL.Enable(EnableCap.ColorArray);
+		}
+
+		private int Abs(int I) {
+			if (I < 0)
+				return -I;
+			return I;
+		}
+
+		private int Floor(float F) {
+			if (F < 0)
+				return (int)F - 1;
+			return (int)F;
 		}
 	}
 }

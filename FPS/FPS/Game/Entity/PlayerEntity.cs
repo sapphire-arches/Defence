@@ -1,6 +1,7 @@
 using System;
 using OpenTK;
 using OpenTK.Input;
+using FPS.Game.HMap;
 
 namespace FPS.Game.Entity {
 	public class PlayerEntity : IEntity {

@@ -79,9 +79,9 @@ namespace FPS.Render {
 						float zz = _verts [basei + i + 2];
 						float f1 = (float)Color [xx * 0.5, zz * 0.5];
 						if (_verts [basei + i + 1] >= 0) {
-							_color [basei + i + 0] = f1 * 0.05f + 0.2f;
-							_color [basei + i + 1] = f1 * 0.8f + 0.2f;
-							_color [basei + i + 2] = f1 * 0.05f + 0.2f;
+							_color [basei + i + 0] = f1 * 0.1f + 0.3f;
+							_color [basei + i + 1] = f1 * 0.3f + 0.6f;
+							_color [basei + i + 2] = f1 * 0.1f + 0.3f;
 						} else {
 							_water = true;
 							//Base color is .56, .79, .11
@@ -132,7 +132,6 @@ namespace FPS.Render {
 			GL.VertexPointer(3, VertexPointerType.Float, 0, _verts);
 			GL.ColorPointer(3, ColorPointerType.Float, 0, _color);
 			GL.DrawArrays(BeginMode.Triangles, 0, _verts.Length / 3);
-			RenderWater();
 		}
 
 		public void RenderWater() {

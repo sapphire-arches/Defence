@@ -1,10 +1,12 @@
 using System;
 using OpenTK;
 using FPS.Game;
+using FPS.Game.HMap;
 
 namespace FPS.Game.Entity {
 	public abstract class IEntity {
 		public static readonly float C_OF_FRICTION = 0.1f;
+		public static readonly float BOUNDS_SIZE = IslandGenerator.ISLAND_RADIUS;
 
 		protected Vector3 _pos;
 		protected Vector3 _vel;
@@ -68,6 +70,11 @@ namespace FPS.Game.Entity {
 			} else {
 				_onGround = false;
 			}
+
+			if (-BOUNDS_SIZE > _pos.X || _pos.X > BOUNDS_SIZE)
+				_pos.X = Math.Sign(_pos.X) * BOUNDS_SIZE;
+			if (-BOUNDS_SIZE > Pos.Z || _pos.Z > BOUNDS_SIZE)
+				_pos.Z = Math.Sign(_pos.Z) * BOUNDS_SIZE;
 			_delta = Delta;
 		}
 

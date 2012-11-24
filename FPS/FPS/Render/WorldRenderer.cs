@@ -13,6 +13,7 @@ namespace FPS.Render {
 		HeightmapRenderer _hmap;
 		ShaderProgram _simple;
 		ShaderProgram _underwater;
+		ShaderProgram _water;
 		int _projectionLoc;
 		Matrix4 _projectionMatrix;
 		int _modelviewLoc;
@@ -63,7 +64,8 @@ namespace FPS.Render {
 			_for = For;
 			_hmap = new HeightmapRenderer(_for.Terrain);
 			_simple = new ShaderProgram("res/base.vert", "res/base.frag");
-			_underwater = new ShaderProgram("res/base.vert", "res/water.frag");
+			_underwater = new ShaderProgram("res/base.vert", "res/underwater.frag");
+			_water = new ShaderProgram("res/base.vert", "res/water.frag");
 			_projectionLoc = _simple.GetUniformLocation("projection");
 			_modelviewLoc = _simple.GetUniformLocation("modelview");
 			_aspect = Aspect;
@@ -73,20 +75,40 @@ namespace FPS.Render {
 		}
 
 		public void Render() {
-			if (_pos.Y > 0)
+			if (_pos.Y > 0) {
 				_simple.Use();
-			else
+				_projectionLoc = _simple.GetUniformLocation("projection");
+				_modelviewLoc = _simple.GetUniformLocation("modelview");
+			} else {
 				_underwater.Use();
+				_projectionLoc = _underwater.GetUniformLocation("projection");
+				_modelviewLoc = _underwater.GetUniformLocation("modelview");
+			}
 			_modelview = Matrix4.Identity;
 			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateTranslation(-_pos.X, -_pos.Y, -_pos.Z));
 			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateFromAxisAngle(Vector3.UnitY, -_yaw));
 			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateFromAxisAngle(Vector3.UnitX, -_pitch));
-			GL.UniformMatrix4(_projectionLoc, false, ref _projectionMatrix);
-			GL.UniformMatrix4(_modelviewLoc, false, ref _modelview);
+
+			LoadMatricies();
 			_hmap.Render(_pos.X, _pos.Z);
+
 			foreach (IEntity ent in _for.Ents) {
 				ent.Render();
 			}
+
+			GL.Enable(EnableCap.Blend);
+			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+			_water.Use();
+			_projectionLoc = _water.GetUniformLocation("projection");
+			_modelviewLoc = _water.GetUniformLocation("modelview");
+			LoadMatricies();
+			_hmap.RenderWater(_pos.X, _pos.Z);
+			GL.Disable(EnableCap.Blend);
+		}
+
+		void LoadMatricies() {
+			GL.UniformMatrix4(_projectionLoc, false, ref _projectionMatrix);
+			GL.UniformMatrix4(_modelviewLoc, false, ref _modelview);
 		}
 	}
 }

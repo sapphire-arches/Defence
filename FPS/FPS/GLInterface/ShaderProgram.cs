@@ -1,14 +1,17 @@
 using System;
 using System.IO;
 using OpenTK.Graphics.OpenGL;
+using System.Collections.Generic;
 
 namespace FPS.GLInterface {
 	public class ShaderProgram {
-		private string _vertShader;
-		private int _vertShaderID;
-		private string _pixelShader;
-		private int _pixelShaderID;
-		private int _programID;
+		string _vertShader;
+		int _vertShaderID;
+		string _pixelShader;
+		int _pixelShaderID;
+		int _programID;
+		Dictionary<string, int> _locCache;
+
 
 		public ShaderProgram(string VertShaderFileName, string PixelShaderFileName) {
 			using (StreamReader s = new StreamReader(VertShaderFileName)) {
@@ -45,6 +48,8 @@ namespace FPS.GLInterface {
 			Console.WriteLine("ERROR: " + GL.GetError());
 			Console.WriteLine(GL.GetProgramInfoLog(_programID));
 			Console.WriteLine("--------");
+
+			_locCache = new Dictionary<string, int>();
 		}
 
 		public void Use() {
@@ -52,7 +57,14 @@ namespace FPS.GLInterface {
 		}
 
 		public int GetUniformLocation(string id) {
-			return GL.GetUniformLocation(_programID, id);
+			int tr;
+			if (_locCache.TryGetValue(id, out tr)) {
+				return tr;
+			} else {
+				tr = GL.GetUniformLocation(_programID, id);
+				_locCache.Add(id, tr);
+				return tr;
+			}
 		}
 
 		~ShaderProgram() {

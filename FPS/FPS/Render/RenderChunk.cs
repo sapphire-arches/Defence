@@ -110,7 +110,7 @@ namespace FPS.Render {
 				_wverts [17] = basey + CHUNK_SIZE;
 				for (int i = 0; i < _wcolor.Length; i += 3) {
 					float f1 = (float)Color [_wverts [i + 0], _wverts [i + 2]];
-					_wcolor [i + 0] = 0.3f * f1 + 0.1w f;
+					_wcolor [i + 0] = 0.3f * f1 + 0.1f;
 					_wcolor [i + 1] = 0.3f * f1 + 0.1f;
 					_wcolor [i + 2] = 0.3f * f1 + 0.7f;
 				}

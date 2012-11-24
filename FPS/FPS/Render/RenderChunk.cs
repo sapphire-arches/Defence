@@ -78,52 +78,60 @@ namespace FPS.Render {
 						float xx = _verts [basei + i + 0];
 						float zz = _verts [basei + i + 2];
 						float f1 = (float)Color [xx * 0.5, zz * 0.5];
-						if (_verts [basei + i + 1] >= 0) {
+						if (_verts [basei + i + 1] >= 3) {
 							_color [basei + i + 0] = f1 * 0.1f + 0.3f;
 							_color [basei + i + 1] = f1 * 0.3f + 0.6f;
 							_color [basei + i + 2] = f1 * 0.1f + 0.3f;
 						} else {
 							_water = true;
-							//Base color is .56, .79, .11
-							_color [basei + i + 0] = f1 * 0.1f + 0.51f;
+							//Base color is .76, .79, .21
+							_color [basei + i + 0] = f1 * 0.1f + 0.71f;
 							_color [basei + i + 1] = f1 * 0.1f + 0.74f;
-							_color [basei + i + 2] = f1 * 0.1f + 0.06f;
+							_color [basei + i + 2] = f1 * 0.1f + 0.26f;
 						}
 					}
 				}
 			}
 			if (_water) {
+				int witr = itr * 2;
 				//2 tris, 3 verts/tri, 3 coords / vert;
-				_wverts = new float[2 * 3 * 3];
-				_wcolor = new float[2 * 3 * 3];
-				_wverts [00] = basex + 0;
-				_wverts [01] = 0;
-				_wverts [02] = basey + 0;
+				_wverts = new float[((_lod * _lod) / 2) * 3 * 3];
+				_wcolor = new float[_wverts.Length];
+				for (int x = 0; x < _lod / 2; ++x) {
+					int xp = basex + x * witr;
+					for (int y = 0; y < _lod / 2; ++y) {
+						int yp = basey + y * witr;
+						int basei = ((x + (_lod / 2) * y) * 18);
+						_wverts [basei + 00] = xp + 0;
+						_wverts [basei + 01] = 0;
+						_wverts [basei + 02] = yp + 0;
 				
-				_wverts [03] = basex + 0;
-				_wverts [04] = 0;
-				_wverts [05] = basey + CHUNK_SIZE;
+						_wverts [basei + 03] = xp + 0;
+						_wverts [basei + 04] = 0;
+						_wverts [basei + 05] = yp + witr;
 				
-				_wverts [06] = basex + CHUNK_SIZE;
-				_wverts [07] = 0;
-				_wverts [08] = basey + 0;
+						_wverts [basei + 06] = xp + witr;
+						_wverts [basei + 07] = 0;
+						_wverts [basei + 08] = yp + 0;
 				
-				_wverts [09] = basex + CHUNK_SIZE;
-				_wverts [10] = 0;
-				_wverts [11] = basey + 0;
+						_wverts [basei + 09] = xp + witr;
+						_wverts [basei + 10] = 0;
+						_wverts [basei + 11] = yp + 0;
 				
-				_wverts [12] = basex + 0;
-				_wverts [13] = 0;
-				_wverts [14] = basey + CHUNK_SIZE;
+						_wverts [basei + 12] = xp + 0;
+						_wverts [basei + 13] = 0;
+						_wverts [basei + 14] = yp + witr;
 				
-				_wverts [15] = basex + CHUNK_SIZE;
-				_wverts [16] = 0;
-				_wverts [17] = basey + CHUNK_SIZE;
-				for (int i = 0; i < _wcolor.Length; i += 3) {
-					float f1 = (float)Color [_wverts [i + 0], _wverts [i + 2]];
-					_wcolor [i + 0] = 0.3f * f1 + 0.1f;
-					_wcolor [i + 1] = 0.3f * f1 + 0.1f;
-					_wcolor [i + 2] = 0.3f * f1 + 0.7f;
+						_wverts [basei + 15] = xp + witr;
+						_wverts [basei + 16] = 0;
+						_wverts [basei + 17] = yp + witr;
+						for (int i = 0; i < 18; i += 3) {
+							float f1 = (float)Color [_wverts [basei + i + 0], _wverts [basei + i + 2]];
+							_wcolor [basei + i + 0] = 0.3f * f1 + 0.2f;
+							_wcolor [basei + i + 1] = 0.3f * f1 + 0.3f;
+							_wcolor [basei + i + 2] = 0.3f * f1 + 0.7f;
+						}
+					}
 				}
 			}
 		}

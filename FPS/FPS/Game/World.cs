@@ -6,7 +6,7 @@ using OpenTK;
 
 namespace FPS.Game {
 	public class World {
-		public static readonly Vector3 GRAVITY = new Vector3(0, -0.25f, 0);
+		public static readonly Vector3 GRAVITY = new Vector3(0, -0.9f, 0);
 		private HeightMap _terrain;
 		private LinkedList<IEntity> _ents;
 

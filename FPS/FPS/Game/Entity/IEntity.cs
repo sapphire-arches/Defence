@@ -5,7 +5,7 @@ using FPS.Game.HMap;
 
 namespace FPS.Game.Entity {
 	public abstract class IEntity {
-		public static readonly float C_OF_FRICTION = 0.1f;
+		public static readonly float C_OF_FRICTION = 0.9f;
 		public static readonly float BOUNDS_SIZE = IslandGenerator.ISLAND_RADIUS;
 
 		protected Vector3 _pos;

@@ -6,9 +6,12 @@ using FPS.Game.HMap;
 namespace FPS.Game.Entity {
 	public class PlayerEntity : IEntity {
 		public static readonly float MOVE_SPEED = 0.2f;
-		public static readonly float JUMP_FORCE = 2f;
+		public static readonly float JUMP_FORCE = 2f * -World.GRAVITY.Y;
 		public static readonly float MAX_JUMP_FORCE = 10f;
 		public static readonly float MOUSE_SPEED = 0.001f;
+		public static readonly int JUMP_FRAMES = 5;
+
+		int _jumpFrame = 0;
 
 		public PlayerEntity(Vector3 Pos) : base(Pos) {
 		}
@@ -24,6 +27,10 @@ namespace FPS.Game.Entity {
 				moveForce.X += (float)Math.Sin(Yaw) * MOVE_SPEED;
 			}
 			if (KD [Key.Space] && this.OnGround) {
+				_jumpFrame = 0;
+			}
+			if (_jumpFrame < JUMP_FRAMES) {
+				++_jumpFrame;
 				moveForce.Y += JUMP_FORCE;
 			}
 			Yaw = MouseDelta.X * MOUSE_SPEED;

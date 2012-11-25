@@ -63,9 +63,13 @@ namespace FPS.Render {
 		public WorldRenderer(World For, float Aspect) {
 			_for = For;
 			_hmap = new HeightmapRenderer(_for.Terrain);
-			_simple = new ShaderProgram("res/base.vert", "res/base.frag");
-			_underwater = new ShaderProgram("res/base.vert", "res/underwater.frag");
-			_water = new ShaderProgram("res/base.vert", "res/water.frag");
+			VertexShader vbase = new VertexShader("res/base.vert");
+			FragmentShader fbase = new FragmentShader("res/base.frag");
+			FragmentShader fwater = new FragmentShader("res/water.frag");
+			FragmentShader fuwater = new FragmentShader("res/underwater.frag");
+			_simple = new ShaderProgram(vbase, fbase);
+			_underwater = new ShaderProgram(vbase, fuwater);
+			_water = new ShaderProgram(vbase, fwater);
 			_projectionLoc = _simple.GetUniformLocation("projection");
 			_modelviewLoc = _simple.GetUniformLocation("modelview");
 			_aspect = Aspect;

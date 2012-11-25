@@ -30,8 +30,9 @@ namespace FPS.Render {
 		}
 
 		void Render(float X, float Y, int Pass) {
-			GL.Enable(EnableCap.VertexArray);
-			GL.Enable(EnableCap.ColorArray);
+			GL.EnableClientState(ArrayCap.VertexArray);
+			GL.EnableClientState(ArrayCap.ColorArray);
+			GL.EnableClientState(ArrayCap.NormalArray);
 
 			int mincx = Floor(X / CHUNK_SIZE) - 4;
 			int mincy = Floor(Y / CHUNK_SIZE) - 4;
@@ -76,8 +77,9 @@ namespace FPS.Render {
 					}
 				}
 			}
-			GL.Disable(EnableCap.VertexArray);
-			GL.Enable(EnableCap.ColorArray);
+			GL.DisableClientState(ArrayCap.VertexArray);
+			GL.DisableClientState(ArrayCap.NormalArray);
+			GL.DisableClientState(ArrayCap.ColorArray);
 		}
 
 		private int Abs(int I) {

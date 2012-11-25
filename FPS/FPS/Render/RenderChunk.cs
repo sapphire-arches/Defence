@@ -1,6 +1,7 @@
 using System;
 using FPS.Game.HMap;
 using FPS.Util;
+using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
 namespace FPS.Render {
@@ -10,9 +11,11 @@ namespace FPS.Render {
 		int _cy;
 		float[] _verts;
 		float[] _color;
+		float[] _norms;
 		bool _water;
 		float[] _wverts;
 		float[] _wcolor;
+		float[] _wnorms;
 		int _lod;
 
 		public int X {
@@ -34,6 +37,8 @@ namespace FPS.Render {
 			_lod = Level;
 			//LOD squared squares * 2 tris per square * 3 verts per tri * 3 coords per vert.
 			_verts = new float[_lod * _lod * 2 * 3 * 3];
+			//LOD squared squares * 2 tris per square * 3 verts per tri * 3 normal coords per vert.
+			_norms = new float[_lod * _lod * 2 * 3 * 3];
 			//LOD squared squares * 2 tris per square * 3 verts per tri * 3 colors per vert.
 			_color = new float[_lod * _lod * 2 * 3 * 3];
 			
@@ -45,34 +50,42 @@ namespace FPS.Render {
 
 			int itr = CHUNK_SIZE / _lod;
 
+			Vector3[] vtemp = new Vector3[3];
+			Vector3[] ctemp = new Vector3[3];
+
 			for (int x = 0; x < _lod; ++x) {
 				int xp = basex + x * itr;
 				for (int y = 0; y < _lod; ++y) {
 					int yp = basey + y * itr;
 					int basei = ((x + _lod * y) * 18);
-					_verts [basei + 00] = xp + 0;
-					_verts [basei + 01] = In [xp + 0, yp + 0];
-					_verts [basei + 02] = yp + 0;
 
-					_verts [basei + 03] = xp + 0;
-					_verts [basei + 04] = In [xp + 0, yp + itr];
-					_verts [basei + 05] = yp + itr;
+					vtemp [0].X = xp + 0;
+					vtemp [0].Y = In [xp + 0, yp + 0];
+					vtemp [0].Z = yp + 0;
 
-					_verts [basei + 06] = xp + itr;
-					_verts [basei + 07] = In [xp + itr, yp + 0];
-					_verts [basei + 08] = yp + 0;
+					vtemp [1].X = xp + 0;
+					vtemp [1].Y = In [xp + 0, yp + itr];
+					vtemp [1].Z = yp + itr;
 
-					_verts [basei + 09] = xp + itr;
-					_verts [basei + 10] = In [xp + itr, yp + 0];
-					_verts [basei + 11] = yp + 0;
+					vtemp [2].X = xp + itr;
+					vtemp [2].Y = In [xp + itr, yp + 0];
+					vtemp [2].Z = yp + 0;
 
-					_verts [basei + 12] = xp + 0;
-					_verts [basei + 13] = In [xp + 0, yp + itr];
-					_verts [basei + 14] = yp + itr;
+					Tri(vtemp, ctemp, _verts, _norms, _color, basei);
 
-					_verts [basei + 15] = xp + itr;
-					_verts [basei + 16] = In [xp + itr, yp + itr];
-					_verts [basei + 17] = yp + itr;
+					vtemp [0].X = xp + itr;
+					vtemp [0].Y = In [xp + itr, yp + 0];
+					vtemp [0].Z = yp + 0;
+
+					vtemp [1].X = xp + 0;
+					vtemp [1].Y = In [xp + 0, yp + itr];
+					vtemp [1].Z = yp + itr;
+
+					vtemp [2].X = xp + itr;
+					vtemp [2].Y = In [xp + itr, yp + itr];
+					vtemp [2].Z = yp + itr;
+
+					Tri(vtemp, ctemp, _verts, _norms, _color, basei + 9);
 
 					for (int i = 0; i < 18; i += 3) {
 						float xx = _verts [basei + i + 0];
@@ -97,6 +110,7 @@ namespace FPS.Render {
 				//2 tris, 3 verts/tri, 3 coords / vert;
 				_wverts = new float[((_lod * _lod) / 2) * 3 * 3];
 				_wcolor = new float[_wverts.Length];
+				_wnorms = new float[_wverts.Length];
 				for (int x = 0; x < _lod / 2; ++x) {
 					int xp = basex + x * witr;
 					for (int y = 0; y < _lod / 2; ++y) {
@@ -136,9 +150,50 @@ namespace FPS.Render {
 			}
 		}
 
+		void Tri(Vector3[] v, Vector3[] c, float[] verts, float[] norms, float[] color, int basei) {
+			//Vert
+			verts [basei + 0] = v [0].X;
+			verts [basei + 1] = v [0].Y;
+			verts [basei + 2] = v [0].Z;
+
+			verts [basei + 3] = v [1].X;
+			verts [basei + 4] = v [1].Y;
+			verts [basei + 5] = v [1].Z;
+
+			verts [basei + 6] = v [2].X;
+			verts [basei + 7] = v [2].Y;
+			verts [basei + 8] = v [2].Z;
+			//Color
+			color [basei + 0] = c [0].X;
+			color [basei + 1] = c [0].Y;
+			color [basei + 2] = c [0].Z;
+
+			color [basei + 3] = c [1].X;
+			color [basei + 4] = c [1].Y;
+			color [basei + 5] = c [1].Z;
+
+			color [basei + 6] = c [2].X;
+			color [basei + 7] = c [2].Y;
+			color [basei + 8] = c [2].Z;
+			//Normal
+			Vector3 U = Vector3.Subtract(v [1], v [0]);
+			Vector3 V = Vector3.Subtract(v [2], v [0]);
+			Vector3 N = new Vector3(0, 0, 0);
+			N.X = U.Y * V.Z - U.Z * V.Y;
+			N.Y = U.Z * V.X - U.X * V.Z;
+			N.Z = U.X * V.Y - U.Y * V.Z;
+			N = Vector3.Normalize(N);
+			for (int i = 0; i < 9; i += 3) {
+				norms [basei + i + 0] = N.X;
+				norms [basei + i + 1] = N.Y;
+				norms [basei + i + 2] = N.Z;
+			}
+		}
+
 		public void Render() {
 			GL.VertexPointer(3, VertexPointerType.Float, 0, _verts);
 			GL.ColorPointer(3, ColorPointerType.Float, 0, _color);
+			GL.NormalPointer(NormalPointerType.Float, 0, _norms);
 			GL.DrawArrays(BeginMode.Triangles, 0, _verts.Length / 3);
 		}
 
@@ -146,6 +201,7 @@ namespace FPS.Render {
 			if (_water) {
 				GL.VertexPointer(3, VertexPointerType.Float, 0, _wverts);
 				GL.ColorPointer(3, ColorPointerType.Float, 0, _wcolor);
+				GL.NormalPointer(NormalPointerType.Float, 0, _wnorms);
 				GL.DrawArrays(BeginMode.Triangles, 0, _wverts.Length / 3);
 			}
 		}

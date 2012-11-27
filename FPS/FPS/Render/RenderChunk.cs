@@ -116,29 +116,35 @@ namespace FPS.Render {
 					for (int y = 0; y < _lod / 2; ++y) {
 						int yp = basey + y * witr;
 						int basei = ((x + (_lod / 2) * y) * 18);
-						_wverts [basei + 00] = xp + 0;
-						_wverts [basei + 01] = 0;
-						_wverts [basei + 02] = yp + 0;
-				
-						_wverts [basei + 03] = xp + 0;
-						_wverts [basei + 04] = 0;
-						_wverts [basei + 05] = yp + witr;
-				
-						_wverts [basei + 06] = xp + witr;
-						_wverts [basei + 07] = 0;
-						_wverts [basei + 08] = yp + 0;
-				
-						_wverts [basei + 09] = xp + witr;
-						_wverts [basei + 10] = 0;
-						_wverts [basei + 11] = yp + 0;
-				
-						_wverts [basei + 12] = xp + 0;
-						_wverts [basei + 13] = 0;
-						_wverts [basei + 14] = yp + witr;
-				
-						_wverts [basei + 15] = xp + witr;
-						_wverts [basei + 16] = 0;
-						_wverts [basei + 17] = yp + witr;
+
+						vtemp [0].X = xp + 0;
+						vtemp [0].Y = 0;
+						vtemp [0].Z = yp + 0;
+
+						vtemp [1].X = xp + 0;
+						vtemp [1].Y = 0;
+						vtemp [1].Z = yp + witr;
+
+						vtemp [2].X = xp + witr;
+						vtemp [2].Y = 0;
+						vtemp [2].Z = yp + 0;
+
+						Tri(vtemp, ctemp, _wverts, _wnorms, _wcolor, basei);
+
+						vtemp [0].X = xp + witr;
+						vtemp [0].Y = 0;
+						vtemp [0].Z = yp + 0;
+
+						vtemp [1].X = xp + 0;
+						vtemp [1].Y = 0;
+						vtemp [1].Z = yp + witr;
+
+						vtemp [2].X = xp + witr;
+						vtemp [2].Y = 0;
+						vtemp [2].Z = yp + witr;
+
+						Tri(vtemp, ctemp, _wverts, _wnorms, _wcolor, basei + 9);
+
 						for (int i = 0; i < 18; i += 3) {
 							float f1 = (float)Color [_wverts [basei + i + 0], _wverts [basei + i + 2]];
 							_wcolor [basei + i + 0] = 0.3f * f1 + 0.2f;

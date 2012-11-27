@@ -151,43 +151,33 @@ namespace FPS.Render {
 		}
 
 		void Tri(Vector3[] v, Vector3[] c, float[] verts, float[] norms, float[] color, int basei) {
-			//Vert
-			verts [basei + 0] = v [0].X;
-			verts [basei + 1] = v [0].Y;
-			verts [basei + 2] = v [0].Z;
-
-			verts [basei + 3] = v [1].X;
-			verts [basei + 4] = v [1].Y;
-			verts [basei + 5] = v [1].Z;
-
-			verts [basei + 6] = v [2].X;
-			verts [basei + 7] = v [2].Y;
-			verts [basei + 8] = v [2].Z;
-			//Color
-			color [basei + 0] = c [0].X;
-			color [basei + 1] = c [0].Y;
-			color [basei + 2] = c [0].Z;
-
-			color [basei + 3] = c [1].X;
-			color [basei + 4] = c [1].Y;
-			color [basei + 5] = c [1].Z;
-
-			color [basei + 6] = c [2].X;
-			color [basei + 7] = c [2].Y;
-			color [basei + 8] = c [2].Z;
-			//Normal
-			Vector3 U = Vector3.Subtract(v [1], v [0]);
-			Vector3 V = Vector3.Subtract(v [2], v [0]);
-			Vector3 N = new Vector3(0, 0, 0);
-			N.X = U.Y * V.Z - U.Z * V.Y;
-			N.Y = U.Z * V.X - U.X * V.Z;
-			N.Z = U.X * V.Y - U.Y * V.Z;
-			N = Vector3.Normalize(N);
+			Vector3 N = Normal(v);
 			for (int i = 0; i < 9; i += 3) {
+				int ii = i / 3;
+				//Vert
+				verts [basei + i + 0] = v [ii].X;
+				verts [basei + i + 1] = v [ii].Y;
+				verts [basei + i + 2] = v [ii].Z;
+				//Color
+				color [basei + i + 0] = c [ii].X;
+				color [basei + i + 1] = c [ii].Y;
+				color [basei + i + 2] = c [ii].Z;
+				//Normal
 				norms [basei + i + 0] = N.X;
 				norms [basei + i + 1] = N.Y;
 				norms [basei + i + 2] = N.Z;
 			}
+		}
+
+		Vector3 Normal(Vector3[] v) {
+			//Normal calc
+			Vector3 U = Vector3.Subtract(v [1], v [0]);
+			Vector3 V = Vector3.Subtract(v [2], v [0]);
+			Vector3 N = new Vector3(0, 0, 0);
+			N.X = (U.Y * V.Z) - (U.Z * V.Y);
+			N.Y = (U.Z * V.X) - (U.X * V.Z);
+			N.Z = (U.X * V.Y) - (U.Y * V.X);
+			return Vector3.Normalize(N);
 		}
 
 		public void Render() {

@@ -95,6 +95,29 @@ namespace FPS.Render {
 
 			LoadMatricies();
 			_hmap.Render(_pos.X, _pos.Z);
+			//Draw axies
+			GL.Begin(BeginMode.Lines);
+			float basex = 0;
+			float basey = 50;
+			float basez = 0;
+
+			GL.Color3(1, 0, 0);
+			GL.Normal3(1, 0, 0);
+			GL.Vertex3(basex, basey, basez);
+			GL.Vertex3(basex + 10, basey, basez);
+
+			GL.Color3(0, 1, 0);
+			GL.Normal3(0, 1, 0);
+			GL.Vertex3(basex, basey, basez);
+			GL.Vertex3(basex, basey + 10, basez);
+
+			/*
+			GL.Color3(0, 0, 1);
+			GL.Normal3(0, 0, 1);
+			GL.Vertex3(basex, basey, basez);
+			GL.Vertex3(basex, basey, basez + 10);
+*/
+			GL.End();
 
 			foreach (IEntity ent in _for.Ents) {
 				ent.Render();

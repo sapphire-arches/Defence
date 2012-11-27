@@ -1,11 +1,12 @@
 using System;
 using OpenTK;
 using OpenTK.Input;
+using OpenTK.Graphics.OpenGL;
 using FPS.Game.HMap;
 
 namespace FPS.Game.Entity {
 	public class PlayerEntity : IEntity {
-		public static readonly float MOVE_SPEED = 0.2f;
+		public static readonly float MOVE_SPEED = 2f;
 		public static readonly float JUMP_FORCE = 2f * -World.GRAVITY.Y;
 		public static readonly float MAX_JUMP_FORCE = 10f;
 		public static readonly float MOUSE_SPEED = 0.001f;

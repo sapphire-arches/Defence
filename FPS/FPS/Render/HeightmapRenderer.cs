@@ -9,6 +9,7 @@ namespace FPS.Render {
 	public class HeightmapRenderer {
 		public static readonly int CHUNK_SIZE = Chunk.CHUNK_SIZE;
 		public static readonly int NUM_RENDER_CHUNKS = 16;
+		public static readonly int VIEW_DIST = 4;
 		const int PASS_GROUND = 0;
 		const int PASS_WATER = 1;
 		HeightMap _for;
@@ -34,17 +35,17 @@ namespace FPS.Render {
 			GL.EnableClientState(ArrayCap.ColorArray);
 			GL.EnableClientState(ArrayCap.NormalArray);
 
-			int mincx = Floor(X / CHUNK_SIZE) - 4;
-			int mincy = Floor(Y / CHUNK_SIZE) - 4;
+			int mincx = Floor(X / CHUNK_SIZE) - VIEW_DIST;
+			int mincy = Floor(Y / CHUNK_SIZE) - VIEW_DIST;
 
-			for (int cx = mincx; cx < mincx + 9; ++cx) {
-				for (int cy = mincy; cy < mincy + 9; ++cy) {
+			for (int cx = mincx; cx < mincx + VIEW_DIST + VIEW_DIST + 1; ++cx) {
+				for (int cy = mincy; cy < mincy + VIEW_DIST + VIEW_DIST + 1; ++cy) {
 
 					int cox = cx - mincx;
 					int coy = cy - mincy;
 
-					cox = Abs(cox - 4);
-					coy = Abs(coy - 4);
+					cox = Abs(cox - VIEW_DIST);
+					coy = Abs(coy - VIEW_DIST);
 					int d = cox + coy;
 					--d;
 					if (d < 0)

@@ -9,8 +9,8 @@ namespace FPS.Game.HMap {
 	public class IslandGenerator : IGenerator {
 		public static readonly int ISLAND_RADIUS = 500;
 		public static readonly int ISLAND_DIAM = 2 * ISLAND_RADIUS;
-		public static readonly float MAX_HEIGHT = 20f;
-		public static readonly float DETAIL_1_HEIGHT = 20f;
+		public static readonly float MAX_HEIGHT = 30f;
+		public static readonly float DETAIL_1_HEIGHT = 10f;
 		public static readonly float DETAIL_2_HEIGHT = 1f;
 		
 		Perlin2D _p2d;
@@ -21,6 +21,7 @@ namespace FPS.Game.HMap {
 
 		public float GetHeight(float X, float Y) {
 			float temp = 0;
+			//temp += (float)_p2d [X * 0.001, Y * 0.001] * (MAX_HEIGHT) - (MAX_HEIGHT / 2);
 			temp += (float)_p2d [X * 0.025, Y * 0.025] * (DETAIL_1_HEIGHT) - (DETAIL_1_HEIGHT / 2);
 			temp += (float)_p2d [X * 0.100, Y * 0.100] * (DETAIL_2_HEIGHT) - (DETAIL_2_HEIGHT / 2);
 			X = Min(Max(X, -ISLAND_RADIUS), ISLAND_RADIUS);

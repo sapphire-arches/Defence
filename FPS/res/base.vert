@@ -7,7 +7,7 @@ void main (void) {
     c.r = abs(gl_Normal.x);
     c.g = abs(gl_Normal.y);
     c.b = abs(gl_Normal.z);
-    gl_FrontColor = mix(gl_Color, vec4(0, 0, 0, 1), (c.b + c.r) / 2.0);
+    gl_FrontColor = gl_Color;
     gl_BackColor = vec4(1, 0, 1, 0);
     gl_FogFragCoord = gl_Position.z;
 }

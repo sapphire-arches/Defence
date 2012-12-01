@@ -7,7 +7,8 @@ using OpenTK;
 
 namespace FPS.Render {
 	public class WorldRenderer {
-		public static readonly float MAX_DEPTH = 128f;
+		public const float MAX_DEPTH = 128f;
+		public const float FOV = (float)(0.5 * Math.PI); //90 degrees
 
 		World _for;
 		HeightmapRenderer _hmap;
@@ -29,8 +30,8 @@ namespace FPS.Render {
 				_pitch = value;
 				if (_pitch < -(0.5 * Math.PI))
 					_pitch = -(float)Math.PI * 0.5f;
-				if (_pitch > 0.5 * Math.PI)
-					_pitch = (float)Math.PI * 0.5f;
+				if (_pitch > 0)
+					_pitch = 0;
 			}
 		}
 
@@ -56,13 +57,13 @@ namespace FPS.Render {
 			get { return _aspect; }
 			set { 
 				_aspect = value;
-				_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(0.5 * _aspect * Math.PI), _aspect, 0.01f, MAX_DEPTH);
+				_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(FOV), _aspect, 0.01f, MAX_DEPTH);
 			}
 		}
 
 		public WorldRenderer(World For, float Aspect) {
 			_for = For;
-			_hmap = new HeightmapRenderer(_for.Terrain);
+			_hmap = new HeightmapRenderer(this, _for.Terrain);
 			VertexShader vbase = new VertexShader("res/base.vert");
 			FragmentShader fbase = new FragmentShader("res/base.frag");
 			FragmentShader fwater = new FragmentShader("res/water.frag");
@@ -73,13 +74,13 @@ namespace FPS.Render {
 			_projectionLoc = _simple.GetUniformLocation("projection");
 			_modelviewLoc = _simple.GetUniformLocation("modelview");
 			_aspect = Aspect;
-			_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(0.25 * _aspect * Math.PI), _aspect, 0.01f, MAX_DEPTH);
+			_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(FOV), _aspect, 0.01f, MAX_DEPTH);
 			_modelview = Matrix4.CreateTranslation(-10f, -5f, -10f);
 			_pos = new Vector3(10, 2, 10);
 		}
 
 		public void Render() {
-			if (_pos.Y > 0) {
+			if (true) {
 				_simple.Use();
 				_projectionLoc = _simple.GetUniformLocation("projection");
 				_modelviewLoc = _simple.GetUniformLocation("modelview");

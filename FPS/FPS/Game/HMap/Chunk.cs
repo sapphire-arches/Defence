@@ -2,7 +2,7 @@ using System;
 
 namespace FPS.Game.HMap {
 	public class Chunk {
-		public static readonly int CHUNK_SIZE = 32;
+		public const int CHUNK_SIZE = 32;
 
 		float[,] _data;
 		int _x, _y;

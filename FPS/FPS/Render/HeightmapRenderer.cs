@@ -7,16 +7,18 @@ using OpenTK.Graphics.OpenGL;
 
 namespace FPS.Render {
 	public class HeightmapRenderer {
-		public static readonly int CHUNK_SIZE = Chunk.CHUNK_SIZE;
-		public static readonly int NUM_RENDER_CHUNKS = 16;
-		public static readonly int VIEW_DIST = 4;
+		public const int CHUNK_SIZE = Chunk.CHUNK_SIZE;
+		public const int NUM_RENDER_CHUNKS = 16;
+		public const int VIEW_DIST = (int)(WorldRenderer.MAX_DEPTH / CHUNK_SIZE) + 1;
 		const int PASS_GROUND = 0;
 		const int PASS_WATER = 1;
 		HeightMap _for;
 		Perlin2D _p2d;
 		RenderChunk[,] _renchunks;
+		WorldRenderer _in;
 
-		public HeightmapRenderer(HeightMap For) {
+		public HeightmapRenderer(WorldRenderer In, HeightMap For) {
+			_in = In;
 			_for = For;
 			_p2d = new Perlin2D(100);
 			_renchunks = new RenderChunk[NUM_RENDER_CHUNKS, NUM_RENDER_CHUNKS];
@@ -40,47 +42,87 @@ namespace FPS.Render {
 
 			for (int cx = mincx; cx < mincx + VIEW_DIST + VIEW_DIST + 1; ++cx) {
 				for (int cy = mincy; cy < mincy + VIEW_DIST + VIEW_DIST + 1; ++cy) {
+					if (true) { //(InFrustrum(cx, cy)) {
+						int cox = cx - mincx;
+						int coy = cy - mincy;
 
-					int cox = cx - mincx;
-					int coy = cy - mincy;
+						cox = Abs(cox - VIEW_DIST);
+						coy = Abs(coy - VIEW_DIST);
+						int d = 1;//(int)(Math.Sqrt(cox * cox + coy * coy));
 
-					cox = Abs(cox - VIEW_DIST);
-					coy = Abs(coy - VIEW_DIST);
-					int d = cox + coy;
-					--d;
-					if (d < 0)
-						d = 0;
-					if (cox == 1 && coy == 1)
-						d = 0;
-
-					int LOD = 32;
-					LOD >>= d;
-					if (LOD < 1)
-						LOD = 1;
+						int LOD = 16;
+						LOD >>= d;
+						if (LOD < 1)
+							LOD = 1;
 					
-					int x = cx % NUM_RENDER_CHUNKS;
-					int y = cy % NUM_RENDER_CHUNKS;
-					if (x < 0)
-						x += NUM_RENDER_CHUNKS;
-					if (y < 0)
-						y += NUM_RENDER_CHUNKS;
-					if (_renchunks [x, y] == null || _renchunks [x, y].X != cx || _renchunks [x, y].Y != cy || _renchunks [x, y].LOD != LOD)
-						_renchunks [x, y] = new RenderChunk(_for, _p2d, cx, cy, LOD);
-					switch (Pass) {
-						case PASS_GROUND:
-							_renchunks [x, y].Render();
-							break;
-						case PASS_WATER:
-							_renchunks [x, y].RenderWater();
-							break;
-						default:
-							throw new ArgumentException("Pass " + Pass + " out of range");
+						int x = cx % NUM_RENDER_CHUNKS;
+						int y = cy % NUM_RENDER_CHUNKS;
+						if (x < 0)
+							x += NUM_RENDER_CHUNKS;
+						if (y < 0)
+							y += NUM_RENDER_CHUNKS;
+						if (_renchunks [x, y] == null || _renchunks [x, y].X != cx || _renchunks [x, y].Y != cy || _renchunks [x, y].LOD != LOD)
+							_renchunks [x, y] = new RenderChunk(_for, _p2d, cx, cy, LOD);
+						switch (Pass) {
+							case PASS_GROUND:
+								_renchunks [x, y].Render();
+								break;
+							case PASS_WATER:
+								_renchunks [x, y].RenderWater();
+								break;
+							default:
+								throw new ArgumentException("Pass " + Pass + " out of range");
+						}
 					}
 				}
 			}
 			GL.DisableClientState(ArrayCap.VertexArray);
 			GL.DisableClientState(ArrayCap.NormalArray);
 			GL.DisableClientState(ArrayCap.ColorArray);
+		}
+
+		private bool InFrustrum(int cx, int cy) {
+			//Doesn't work.
+
+			/* X ->     Y
+			 * TL   TR  |
+			 * +-----+ \ /
+			 * |     |  *
+			 * |     |
+			 * +-----+
+			 * BL    BR
+			 * */
+			double lx = cx * CHUNK_SIZE - _in.Pos.X;
+			double ly = cy * CHUNK_SIZE - _in.Pos.Z;
+
+			double tl = CorrectAngle(Math.Atan2(ly, lx));
+			double tr = CorrectAngle(Math.Atan2(ly, lx + CHUNK_SIZE));
+			double bl = CorrectAngle(Math.Atan2(ly + CHUNK_SIZE, lx));
+			double br = CorrectAngle(Math.Atan2(ly + CHUNK_SIZE, lx + CHUNK_SIZE));
+
+			double half = (WorldRenderer.FOV) / 2;
+			double frustrumMin = CorrectAngle(-_in.Yaw - half);
+			double frustrumMax = CorrectAngle(-_in.Yaw + half);
+			/*
+			if (frustrumMin > frustrumMax) {
+				double temp = frustrumMax;
+				frustrumMax = frustrumMin;
+				frustrumMin = temp;
+			}*/
+
+			return (frustrumMin < tl && tl < frustrumMax) ||
+				(frustrumMin < tr && tr < frustrumMax) ||
+				(frustrumMin < bl && bl < frustrumMax) ||
+				(frustrumMin < br && br < frustrumMax) ||
+				(tl == 0 || tr == 0 || bl == 0 || br == 0);
+		}
+
+		double CorrectAngle(double A) {
+			const double FULL = 2 * Math.PI;
+			while (A < 0)
+				A = A + FULL;
+			A %= FULL;
+			return A;
 		}
 
 		private int Abs(int I) {

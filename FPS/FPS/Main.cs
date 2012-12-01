@@ -12,7 +12,7 @@ using FPS.Render;
 
 namespace FPS {
 	public class MainClass  : GameWindow {
-		public readonly Vector3 CAM_OFFSET = new Vector3(0, 1, 0);
+		public readonly Vector3 CAM_OFFSET = new Vector3(0, 2, 0);
 		World _world;
 		HeightMap _map;
 		WorldRenderer _ren;

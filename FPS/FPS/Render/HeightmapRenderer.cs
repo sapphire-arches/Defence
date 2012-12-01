@@ -42,7 +42,7 @@ namespace FPS.Render {
 
 			for (int cx = mincx; cx < mincx + VIEW_DIST + VIEW_DIST + 1; ++cx) {
 				for (int cy = mincy; cy < mincy + VIEW_DIST + VIEW_DIST + 1; ++cy) {
-					if (true) { //(InFrustrum(cx, cy)) {
+					if (InFrustrum(cx, cy)) {
 						int cox = cx - mincx;
 						int coy = cy - mincy;
 
@@ -50,7 +50,7 @@ namespace FPS.Render {
 						coy = Abs(coy - VIEW_DIST);
 						int d = 1;//(int)(Math.Sqrt(cox * cox + coy * coy));
 
-						int LOD = 16;
+						int LOD = 32;
 						LOD >>= d;
 						if (LOD < 1)
 							LOD = 1;
@@ -94,27 +94,25 @@ namespace FPS.Render {
 			 * */
 			double lx = cx * CHUNK_SIZE - _in.Pos.X;
 			double ly = cy * CHUNK_SIZE - _in.Pos.Z;
+			if (lx / CHUNK_SIZE < 2 || ly / CHUNK_SIZE < 2) {
+				return true;
+			}
 
 			double tl = CorrectAngle(Math.Atan2(ly, lx));
 			double tr = CorrectAngle(Math.Atan2(ly, lx + CHUNK_SIZE));
 			double bl = CorrectAngle(Math.Atan2(ly + CHUNK_SIZE, lx));
 			double br = CorrectAngle(Math.Atan2(ly + CHUNK_SIZE, lx + CHUNK_SIZE));
+			
+			const double halfpi = Math.PI / 2;
+			const double quarterpi = halfpi / 2;
+			double half = (WorldRenderer.FOV + quarterpi) / 2;
+			double negyaw = CorrectAngle(-_in.Yaw - halfpi);
 
-			double half = (WorldRenderer.FOV) / 2;
-			double frustrumMin = CorrectAngle(-_in.Yaw - half);
-			double frustrumMax = CorrectAngle(-_in.Yaw + half);
-			/*
-			if (frustrumMin > frustrumMax) {
-				double temp = frustrumMax;
-				frustrumMax = frustrumMin;
-				frustrumMin = temp;
-			}*/
-
-			return (frustrumMin < tl && tl < frustrumMax) ||
-				(frustrumMin < tr && tr < frustrumMax) ||
-				(frustrumMin < bl && bl < frustrumMax) ||
-				(frustrumMin < br && br < frustrumMax) ||
-				(tl == 0 || tr == 0 || bl == 0 || br == 0);
+			return AngleCmp(tl, negyaw, half) ||
+				AngleCmp(tr, negyaw, half) ||
+				AngleCmp(bl, negyaw, half) ||
+				AngleCmp(br, negyaw, half);// ||
+			//(tl == 0 || tr == 0 || bl == 0 || br == 0);
 		}
 
 		double CorrectAngle(double A) {
@@ -123,6 +121,10 @@ namespace FPS.Render {
 				A = A + FULL;
 			A %= FULL;
 			return A;
+		}
+
+		bool AngleCmp(double A1, double A2, double MaxDiff) {
+			return Math.Abs(A1 - A2) < MaxDiff;
 		}
 
 		private int Abs(int I) {

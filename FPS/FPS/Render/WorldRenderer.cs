@@ -19,9 +19,8 @@ namespace FPS.Render {
 		ShaderProgram _simple;
 		ShaderProgram _underwater;
 		ShaderProgram _water;
-		int _projectionLoc;
+		ShaderProgram _curr;
 		Matrix4 _projectionMatrix;
-		int _modelviewLoc;
 		Matrix4 _modelview;
 		float _aspect;
 		float _pitch;
@@ -70,15 +69,24 @@ namespace FPS.Render {
 		public WorldRenderer(MainClass In, World For, float Aspect) {
 			_for = For;
 			_hmap = new HeightmapRenderer(this, _for.Terrain);
-			VertexShader vbase = new VertexShader("res/base.vert");
-			FragmentShader fbase = new FragmentShader("res/base.frag");
-			FragmentShader fwater = new FragmentShader("res/water.frag");
-			FragmentShader fuwater = new FragmentShader("res/underwater.frag");
-			_simple = new ShaderProgram(vbase, fbase);
-			_underwater = new ShaderProgram(vbase, fuwater);
-			_water = new ShaderProgram(vbase, fwater);
-			_projectionLoc = _simple.GetUniformLocation("projection");
-			_modelviewLoc = _simple.GetUniformLocation("modelview");
+			FragmentShader fsimple = new FragmentShader("res/shader/simple.frag");
+			FragmentShader fwater = new FragmentShader("res/shader/water.frag");
+			FragmentShader fuwater = new FragmentShader("res/shader/underwater.frag");
+
+			_simple = new ShaderProgram();
+			_simple.AddFragShader(fsimple);
+			GLUtil.PrintGLError("Simple");
+
+			_underwater = new ShaderProgram();
+			_underwater.AddFragShader(fuwater);
+			GLUtil.PrintGLError("Underwater");
+
+			_water = new ShaderProgram();
+			_water.AddFragShader(fwater);
+			GLUtil.PrintGLError("Water");
+
+			_curr = _simple;
+
 			_aspect = Aspect;
 			_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(FOV), _aspect, 0.01f, MAX_DEPTH);
 			_modelview = Matrix4.CreateTranslation(-10f, -5f, -10f);
@@ -88,14 +96,11 @@ namespace FPS.Render {
 		}
 
 		public void Render() {
+			GLUtil.PrintGLError("Prerender");
 			if (_pos.Y > 0) {
 				_simple.Use();
-				_projectionLoc = _simple.GetUniformLocation("projection");
-				_modelviewLoc = _simple.GetUniformLocation("modelview");
 			} else {
 				_underwater.Use();
-				_projectionLoc = _underwater.GetUniformLocation("projection");
-				_modelviewLoc = _underwater.GetUniformLocation("modelview");
 			}
 			_modelview = Matrix4.Identity;
 			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateTranslation(-_pos.X, -_pos.Y, -_pos.Z));
@@ -114,8 +119,6 @@ namespace FPS.Render {
 			GL.Enable(EnableCap.Blend);
 			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 			_water.Use();
-			_projectionLoc = _water.GetUniformLocation("projection");
-			_modelviewLoc = _water.GetUniformLocation("modelview");
 			LoadMatricies();
 			_hmap.RenderWater(_pos.X, _pos.Z);
 			GL.Disable(EnableCap.Blend);
@@ -131,27 +134,41 @@ namespace FPS.Render {
 
 		public void PopMatrix() {
 			_modelview = _mviewstack.Pop();
-			GL.UniformMatrix4(_modelviewLoc, false, ref _modelview);
+			int modelviewLoc = _curr.GetUniformLocation("modelview");
+			GL.UniformMatrix4(modelviewLoc, false, ref _modelview);
 		}
 
 		public void LoadIdent() {
 			_modelview = Matrix4.Identity;
-			GL.UniformMatrix4(_modelviewLoc, false, ref _modelview);
+			int modelviewLoc = _curr.GetUniformLocation("modelview");
+			GL.UniformMatrix4(modelviewLoc, false, ref _modelview);
 		}
 
 		public void Translate(float X, float Y, float Z) {
 			_modelview = Matrix4.Mult(Matrix4.CreateTranslation(X, Y, Z), _modelview);
-			GL.UniformMatrix4(_modelviewLoc, false, ref _modelview);
+			int modelviewLoc = _curr.GetUniformLocation("modelview");
+			GL.UniformMatrix4(modelviewLoc, false, ref _modelview);
 		}
 
 		public void Rotate(Vector3 Axis, float Angle) {
 			_modelview = Matrix4.Mult(Matrix4.CreateFromAxisAngle(Axis, Angle), _modelview);
-			GL.UniformMatrix4(_modelviewLoc, false, ref _modelview);
+			int modelviewLoc = _curr.GetUniformLocation("modelview");
+			GL.UniformMatrix4(modelviewLoc, false, ref _modelview);
+		}
+
+		public void BindTexture(int id) {
+			int texloc = _curr.GetUniformLocation("tex");
+			GL.Uniform1(texloc, 0);
+			GL.ActiveTexture(TextureUnit.Texture0);
+			GL.BindTexture(TextureTarget.Texture2D, id);
 		}
 
 		void LoadMatricies() {
-			GL.UniformMatrix4(_projectionLoc, false, ref _projectionMatrix);
-			GL.UniformMatrix4(_modelviewLoc, false, ref _modelview);
+			int projectionLoc = _curr.GetUniformLocation("projection");
+			int modelviewLoc = _curr.GetUniformLocation("modelview");
+			GL.UniformMatrix4(projectionLoc, false, ref _projectionMatrix);
+			GL.UniformMatrix4(modelviewLoc, false, ref _modelview);
+			GLUtil.PrintGLError("Matricies");
 		}
 	}
 }

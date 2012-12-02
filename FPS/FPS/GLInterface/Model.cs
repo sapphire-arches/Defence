@@ -1,5 +1,8 @@
+using FPS.Render;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using OpenTK.Graphics.OpenGL;
@@ -20,18 +23,16 @@ namespace FPS.GLInterface {
 		//indicies into _buffs
 		const int VERT_INDEX = 0;
 		const int NUM_BUFFS = 1;
+		//Texture ID
+		int _texid;
 		//Number of verts
 		int _numverts;
 		//Size constants
 		static int VS = 0;
-		static int V2S = 0;
-		static int V3S = 0;
 
-		public Model(Vertex[] Verts) {
+		public Model(Vertex[] Verts, Bitmap Texture) {
 			if (VS == 0) {
 				VS = Marshal.SizeOf(Verts [0]);
-				V2S = Marshal.SizeOf(Verts [0].TexCoord);
-				V3S = Marshal.SizeOf(Verts [0].Normal);
 			}
 			_buffs = new uint[NUM_BUFFS];
 			_numverts = Verts.Length;
@@ -40,13 +41,28 @@ namespace FPS.GLInterface {
 			GL.BindBuffer(BufferTarget.ArrayBuffer, _buffs [VERT_INDEX]);
 			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(Verts.Length * VS), Verts, BufferUsageHint.StaticDraw);
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+			//Texture data
+			BitmapData data = Texture.LockBits(
+				new Rectangle(0, 0, Texture.Width, Texture.Height),
+				ImageLockMode.ReadOnly,
+				System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+			_texid = GL.GenTexture();
+			GL.BindTexture(TextureTarget.Texture2D, _texid);
+			GL.TexImage2D(TextureTarget.Texture2D, 0,
+			              PixelInternalFormat.Rgba, data.Width, data.Height,
+			              0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+			Texture.UnlockBits(data);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 		}
 
-		public void Render() {
+		public void Render(WorldRenderer WR) {
+			//Bind texture.
+			WR.BindTexture(_texid);
+			//Bind vertex data
 			GL.BindBuffer(BufferTarget.ArrayBuffer, _buffs [VERT_INDEX]);
 			GL.InterleavedArrays(InterleavedArrayFormat.T2fC4fN3fV3f, 0, (IntPtr)0);
 
-			GL.PointSize(3f);
 			GL.DrawArrays(BeginMode.Triangles, 0, _numverts);
 
 			//Unbind buffer
@@ -87,8 +103,6 @@ namespace FPS.GLInterface {
 		static OBJModelParser INSTANCE = new OBJModelParser();
 
 		public Model Parse(string FName) {
-			if (!FName.EndsWith(".obj"))
-				throw new ArgumentException("File name must end in .obj");
 			string[] line;
 			List<Vector3> pos = new List<Vector3>();
 			List<Vector3> norm = new List<Vector3>();
@@ -96,7 +110,7 @@ namespace FPS.GLInterface {
 			List<Vertex> tr = new List<Vertex>();
 			int linecount = 0;
 			int objcount = 0;
-			using (StreamReader s = new StreamReader(FName)) {
+			using (StreamReader s = new StreamReader(FName + ".obj")) {
 				while (!s.EndOfStream) {
 					++linecount;
 					line = s.ReadLine().Split(SPACE);
@@ -142,7 +156,7 @@ namespace FPS.GLInterface {
 					}
 				}
 			}
-			return new Model(tr.ToArray());
+			return new Model(tr.ToArray(), new Bitmap(FName + ".png"));
 		}
 
 		Vector3 ReadVec3(string[] Line) {
@@ -160,17 +174,14 @@ namespace FPS.GLInterface {
 			return tmp;
 		}
 
-		//XXX: Get rid of this, do some actual color loading.
-		Random r = new Random();
-
 		void ReadFace(string[] Line, ref List<Vector3> Pos, ref List<Vector3> Norm, ref List<Vector2> Tex, ref List<Vertex> Out) {
 			for (int i = 0; i < Line.Length - 1; ++i) {
 				string[] v = Line [i + 1].Split(FSLASH);
 				Vertex tmp = new Vertex();
 				tmp.Position = Pos [int.Parse(v [0]) - 1];
-				tmp.Color.X = (float)r.NextDouble();
-				tmp.Color.Y = (float)r.NextDouble();
-				tmp.Color.Z = (float)r.NextDouble();
+				tmp.Color.X = 1;//(float)r.NextDouble();
+				tmp.Color.Y = 1;//(float)r.NextDouble();
+				tmp.Color.Z = 1;//(float)r.NextDouble();
 				tmp.TexCoord = Tex [int.Parse(v [1]) - 1];
 				tmp.Normal = Norm [int.Parse(v [2]) - 1];
 				Out.Add(tmp);

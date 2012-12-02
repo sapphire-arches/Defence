@@ -6,10 +6,10 @@ namespace FPS.GLInterface {
 		private GLUtil() {
 		}
 
-		public static void PrintGLError() {
+		public static void PrintGLError(string Pre) {
 			ErrorCode err = GL.GetError();
 			if (err != ErrorCode.NoError) {
-				Console.WriteLine(err);
+				Console.WriteLine(Pre + ": " + err);
 			}
 		}
 	}

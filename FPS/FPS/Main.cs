@@ -84,7 +84,7 @@ namespace FPS {
 			_timer.Start();
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			_ren.Render();
-			GLUtil.PrintGLError();
+			GLUtil.PrintGLError("Main");
 			SwapBuffers();
 			++_frame;
 			_timer.Stop();

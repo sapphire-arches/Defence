@@ -12,17 +12,14 @@ namespace FPS.Game.Entity {
 		public static readonly float JUMP_FORCE = 1f;
 		public const float MAX_JUMP_FORCE = 10f;
 		public const float MOUSE_SPEED = 0.001f;
-		public const int JUMP_FRAMES = 1;
 		const float HALFPI = (float)(Math.PI * 0.5);
 
-		int _jumpFrame;
 		int _walkFrame;
 		Model _sword;
 
 		public PlayerEntity(Vector3 Pos) : base(Pos) {
-			_jumpFrame = JUMP_FRAMES;
 			_walkFrame = 0;
-			_sword = OBJModelParser.GetInstance().Parse("res/sword.obj");
+			_sword = OBJModelParser.GetInstance().Parse("res/mdl/sword");
 		}
 
 		public void Move(KeyboardDevice KD, Vector2 MouseDelta) {
@@ -49,13 +46,7 @@ namespace FPS.Game.Entity {
 				moved = true;
 			}
 			if (KD [Key.Space] && this.OnGround) {
-				_jumpFrame = 0;
-			}
-			if (_jumpFrame < JUMP_FRAMES) {
-				if (_jumpFrame == JUMP_FRAMES - 1) {
-					moveForce.Y += JUMP_FORCE;
-				}
-				++_jumpFrame;
+				moveForce.Y += JUMP_FORCE;
 			}
 			if (moved)
 				++_walkFrame;
@@ -86,7 +77,7 @@ namespace FPS.Game.Entity {
 			const double afreq = Math.PI * 0.01;
 			In.Rotate(Vector3.UnitX, arange * (float)Math.Sin(afreq * In.GetFrame() + 2 * arange));
 			In.Rotate(Vector3.UnitZ, arange * (float)Math.Cos(afreq * In.GetFrame()));
-			_sword.Render();
+			_sword.Render(In);
 			In.PopMatrix();
 		}
 	}

@@ -4,7 +4,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace FPS.GLInterface {
 	public class Shader {
-		public const bool SHADERDEBUG = true;
+		public const bool SHADERDEBUG = false;
 		int _id;
 
 		public int ID {
@@ -26,7 +26,7 @@ namespace FPS.GLInterface {
 			GL.CompileShader(_id);
 			string err = GL.GetShaderInfoLog(_id);
 			if (err.Contains("error")) {
-				Console.WriteLine("Compile of shader: " + _id + " failed.");
+				Console.WriteLine("Compile of shader: " + FileName + " failed.");
 				Console.WriteLine(src);
 				Console.WriteLine(err);
 			}

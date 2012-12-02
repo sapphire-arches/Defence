@@ -12,7 +12,7 @@ using FPS.Render;
 
 namespace FPS {
 	public class MainClass  : GameWindow {
-		public readonly Vector3 CAM_OFFSET = new Vector3(0, 2, 0);
+		Vector3 _camOffset;
 		World _world;
 		HeightMap _map;
 		WorldRenderer _ren;
@@ -30,7 +30,8 @@ namespace FPS {
 			_world = new World(_map);
 			_pe = new PlayerEntity(new Vector3(0, 20, 0));
 			_world.Ents.AddFirst(_pe);
-			_ren = new WorldRenderer(_world, (float)Width / Height);
+			_ren = new WorldRenderer(this, _world, (float)Width / Height);
+			_camOffset = new Vector3();
 			GL.ClearColor(OpenTK.Graphics.Color4.SkyBlue);
 			GL.Enable(EnableCap.DepthTest);
 			GL.Enable(EnableCap.Fog);
@@ -46,9 +47,9 @@ namespace FPS {
 
 			_mouseDelta = new Vector2(0, 0);
 			_mouseDelta += new Vector2(
-				System.Windows.Forms.Cursor.Position.X - Width / 2,
-				System.Windows.Forms.Cursor.Position.Y - Height / 2);
-			System.Windows.Forms.Cursor.Position = new Point(Width / 2, Height / 2);
+				System.Windows.Forms.Cursor.Position.X - Width / 2 - X,
+				System.Windows.Forms.Cursor.Position.Y - Height / 2 - Y);
+			System.Windows.Forms.Cursor.Position = new Point(Width / 2 + X, Height / 2 + Y);
 			System.Windows.Forms.Cursor.Hide();
 			_timer = new Stopwatch();
 			_capMouse = true;
@@ -64,16 +65,17 @@ namespace FPS {
 			}
 
 			if (_capMouse) {
-				_mouseDelta += new Vector2(
-					System.Windows.Forms.Cursor.Position.X - Width / 2,
-					System.Windows.Forms.Cursor.Position.Y - Height / 2);
-				System.Windows.Forms.Cursor.Position = new Point(Width / 2, Height / 2);
+				_mouseDelta.X = System.Windows.Forms.Cursor.Position.X - Width / 2 - X;
+				_mouseDelta.Y = System.Windows.Forms.Cursor.Position.Y - Height / 2 - Y;
+				System.Windows.Forms.Cursor.Position = new Point(Width / 2 + X, Height / 2 + Y);
 			}
 
 			_pe.Move(Keyboard, _mouseDelta);
 			_world.Tick(1);
 
-			_ren.Pos = Vector3.Add(_pe.Pos, CAM_OFFSET);
+			_camOffset.Y = _pe.GetEyeOffset();
+
+			_ren.Pos = Vector3.Add(_pe.Pos, _camOffset);
 			_ren.Pitch = _pe.Pitch;
 			_ren.Yaw = _pe.Yaw;
 		}
@@ -95,6 +97,10 @@ namespace FPS {
 		protected override void OnResize(EventArgs e) {
 			GL.Viewport(0, 0, Width, Height);
 			_ren.Aspect = (float)Width / Height;
+		}
+
+		public int GetFrame() {
+			return _frame;
 		}
 
 		public static void Main(String[] args) {

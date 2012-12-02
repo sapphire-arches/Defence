@@ -6,10 +6,11 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK;
 
 namespace FPS.GLInterface {
-	//Vertex definition following interleaved format T2fN3fV3f
+	//Vertex definition following interleaved format T2fC4fN3fV3f
 	[StructLayout(LayoutKind.Sequential)]
 	public struct Vertex {
 		public Vector2 TexCoord;
+		public Vector4 Color;
 		public Vector3 Normal;
 		public Vector3 Position;
 	}
@@ -43,10 +44,10 @@ namespace FPS.GLInterface {
 
 		public void Render() {
 			GL.BindBuffer(BufferTarget.ArrayBuffer, _buffs [VERT_INDEX]);
-			GL.InterleavedArrays(InterleavedArrayFormat.T2fN3fV3f, 0, (IntPtr)0);
+			GL.InterleavedArrays(InterleavedArrayFormat.T2fC4fN3fV3f, 0, (IntPtr)0);
 
 			GL.PointSize(3f);
-			GL.DrawArrays(BeginMode.Triangles, 0, _numverts / 3);
+			GL.DrawArrays(BeginMode.Triangles, 0, _numverts);
 
 			//Unbind buffer
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
@@ -159,11 +160,17 @@ namespace FPS.GLInterface {
 			return tmp;
 		}
 
+		//XXX: Get rid of this, do some actual color loading.
+		Random r = new Random();
+
 		void ReadFace(string[] Line, ref List<Vector3> Pos, ref List<Vector3> Norm, ref List<Vector2> Tex, ref List<Vertex> Out) {
-			for (int i = 0; i < 3; ++i) {
+			for (int i = 0; i < Line.Length - 1; ++i) {
 				string[] v = Line [i + 1].Split(FSLASH);
 				Vertex tmp = new Vertex();
 				tmp.Position = Pos [int.Parse(v [0]) - 1];
+				tmp.Color.X = (float)r.NextDouble();
+				tmp.Color.Y = (float)r.NextDouble();
+				tmp.Color.Z = (float)r.NextDouble();
 				tmp.TexCoord = Tex [int.Parse(v [1]) - 1];
 				tmp.Normal = Norm [int.Parse(v [2]) - 1];
 				Out.Add(tmp);

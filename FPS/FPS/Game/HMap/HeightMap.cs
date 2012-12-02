@@ -21,7 +21,7 @@ namespace FPS.Game.HMap {
 					--cx;
 				if (Y < 0 && ly != 0)
 					--cy;
-				return -0.1f;//_cache [cx, cy] [lx, ly];
+				return _cache [cx, cy] [lx, ly];
 			}
 
 			private set {

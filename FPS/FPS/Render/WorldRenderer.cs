@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using FPS.Game;
 using FPS.Game.Entity;
 using FPS.GLInterface;
@@ -9,6 +10,9 @@ namespace FPS.Render {
 	public class WorldRenderer {
 		public const float MAX_DEPTH = 128f;
 		public const float FOV = (float)(0.5 * Math.PI); //90 degrees
+		const float HALFPI = (float)(0.5 * Math.PI);
+		public const float MAX_PITCH = HALFPI;
+		public const float MIN_PITCH = HALFPI * -0.1f;
 
 		World _for;
 		HeightmapRenderer _hmap;
@@ -23,16 +27,17 @@ namespace FPS.Render {
 		float _pitch;
 		float _yaw;
 		Vector3 _pos;
+		Stack<Matrix4> _mviewstack;
+		MainClass _in;
 
 		public float Pitch {
 			get { return _pitch; }
 			set { 
 				_pitch = value;
-				const float halfpi = (float)(0.5 * Math.PI);
-				if (_pitch < -halfpi)
-					_pitch = -halfpi;
-				if (_pitch > halfpi)
-					_pitch = halfpi;
+				if (_pitch < MIN_PITCH)
+					_pitch = MIN_PITCH;
+				if (_pitch > MAX_PITCH)
+					_pitch = MAX_PITCH;
 			}
 		}
 
@@ -62,7 +67,7 @@ namespace FPS.Render {
 			}
 		}
 
-		public WorldRenderer(World For, float Aspect) {
+		public WorldRenderer(MainClass In, World For, float Aspect) {
 			_for = For;
 			_hmap = new HeightmapRenderer(this, _for.Terrain);
 			VertexShader vbase = new VertexShader("res/base.vert");
@@ -78,6 +83,8 @@ namespace FPS.Render {
 			_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(FOV), _aspect, 0.01f, MAX_DEPTH);
 			_modelview = Matrix4.CreateTranslation(-10f, -5f, -10f);
 			_pos = new Vector3(10, 2, 10);
+			_mviewstack = new Stack<Matrix4>();
+			_in = In;
 		}
 
 		public void Render() {
@@ -97,33 +104,12 @@ namespace FPS.Render {
 
 			LoadMatricies();
 			_hmap.Render(_pos.X, _pos.Z);
-			//Draw axies
-			GL.Begin(BeginMode.Lines);
-			float basex = 0;
-			float basey = 50;
-			float basez = 0;
 
-			GL.Color3(1, 0, 0);
-			GL.Normal3(1, 0, 0);
-			GL.Vertex3(basex, basey, basez);
-			GL.Vertex3(basex + 10, basey, basez);
-
-			GL.Color3(0, 1, 0);
-			GL.Normal3(0, 1, 0);
-			GL.Vertex3(basex, basey, basez);
-			GL.Vertex3(basex, basey + 10, basez);
-
-			/*
-			GL.Color3(0, 0, 1);
-			GL.Normal3(0, 0, 1);
-			GL.Vertex3(basex, basey, basez);
-			GL.Vertex3(basex, basey, basez + 10);
-*/
-			GL.End();
-
+			PushMatrix();
 			foreach (IEntity ent in _for.Ents) {
-				ent.Render();
+				ent.Render(this);
 			}
+			PopMatrix();
 
 			GL.Enable(EnableCap.Blend);
 			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
@@ -133,6 +119,34 @@ namespace FPS.Render {
 			LoadMatricies();
 			_hmap.RenderWater(_pos.X, _pos.Z);
 			GL.Disable(EnableCap.Blend);
+		}
+
+		public int GetFrame() {
+			return _in.GetFrame();
+		}
+
+		public void PushMatrix() {
+			_mviewstack.Push(_modelview);
+		}
+
+		public void PopMatrix() {
+			_modelview = _mviewstack.Pop();
+			GL.UniformMatrix4(_modelviewLoc, false, ref _modelview);
+		}
+
+		public void LoadIdent() {
+			_modelview = Matrix4.Identity;
+			GL.UniformMatrix4(_modelviewLoc, false, ref _modelview);
+		}
+
+		public void Translate(float X, float Y, float Z) {
+			_modelview = Matrix4.Mult(Matrix4.CreateTranslation(X, Y, Z), _modelview);
+			GL.UniformMatrix4(_modelviewLoc, false, ref _modelview);
+		}
+
+		public void Rotate(Vector3 Axis, float Angle) {
+			_modelview = Matrix4.Mult(Matrix4.CreateFromAxisAngle(Axis, Angle), _modelview);
+			GL.UniformMatrix4(_modelviewLoc, false, ref _modelview);
 		}
 
 		void LoadMatricies() {

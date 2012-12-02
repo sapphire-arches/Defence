@@ -2,10 +2,11 @@ using System;
 using OpenTK;
 using FPS.Game;
 using FPS.Game.HMap;
+using FPS.Render;
 
 namespace FPS.Game.Entity {
 	public abstract class IEntity {
-		public static readonly float C_OF_FRICTION = 0.9f;
+		public static readonly float C_OF_FRICTION = 0.5f;
 		public static readonly float BOUNDS_SIZE = IslandGenerator.ISLAND_RADIUS;
 
 		protected Vector3 _pos;
@@ -57,7 +58,8 @@ namespace FPS.Game.Entity {
 		}
 
 		public void Tick(World W, float Delta) {
-			ApplyForce(Vector3.Multiply(_vel, -C_OF_FRICTION));
+			_vel.X *= C_OF_FRICTION;
+			_vel.Z *= C_OF_FRICTION;
 			ApplyForce(World.GRAVITY);
 			_pos += _vel;
 			_vel += _acc;
@@ -82,6 +84,6 @@ namespace FPS.Game.Entity {
 			_acc += Vector3.Multiply(Force, _delta);
 		}
 
-		public abstract void Render();
+		public abstract void Render(WorldRenderer In);
 	}
 }

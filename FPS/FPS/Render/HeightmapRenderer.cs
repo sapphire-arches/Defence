@@ -111,8 +111,7 @@ namespace FPS.Render {
 			return AngleCmp(tl, negyaw, half) ||
 				AngleCmp(tr, negyaw, half) ||
 				AngleCmp(bl, negyaw, half) ||
-				AngleCmp(br, negyaw, half);// ||
-			//(tl == 0 || tr == 0 || bl == 0 || br == 0);
+				AngleCmp(br, negyaw, half);
 		}
 
 		double CorrectAngle(double A) {

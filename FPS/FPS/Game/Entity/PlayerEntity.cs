@@ -3,6 +3,7 @@ using OpenTK;
 using OpenTK.Input;
 using OpenTK.Graphics.OpenGL;
 using FPS.Game.HMap;
+using FPS.GLInterface;
 
 namespace FPS.Game.Entity {
 	public class PlayerEntity : IEntity {
@@ -13,8 +14,10 @@ namespace FPS.Game.Entity {
 		public static readonly int JUMP_FRAMES = 5;
 
 		int _jumpFrame = 0;
+		Model _sword;
 
 		public PlayerEntity(Vector3 Pos) : base(Pos) {
+			_sword = OBJModelParser.GetInstance().Parse("res/sword.obj");
 		}
 
 		public void Move(KeyboardDevice KD, Vector2 MouseDelta) {
@@ -40,7 +43,7 @@ namespace FPS.Game.Entity {
 		}
 
 		public override void Render() {
-
+			_sword.Render();
 		}
 	}
 }

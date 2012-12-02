@@ -28,10 +28,11 @@ namespace FPS.Render {
 			get { return _pitch; }
 			set { 
 				_pitch = value;
-				if (_pitch < -(0.5 * Math.PI))
-					_pitch = -(float)Math.PI * 0.5f;
-				if (_pitch > 0)
-					_pitch = 0;
+				const float halfpi = (float)(0.5 * Math.PI);
+				if (_pitch < -halfpi)
+					_pitch = -halfpi;
+				if (_pitch > halfpi)
+					_pitch = halfpi;
 			}
 		}
 
@@ -80,7 +81,7 @@ namespace FPS.Render {
 		}
 
 		public void Render() {
-			if (true) {
+			if (_pos.Y > 0) {
 				_simple.Use();
 				_projectionLoc = _simple.GetUniformLocation("projection");
 				_modelviewLoc = _simple.GetUniformLocation("modelview");

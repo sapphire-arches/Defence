@@ -38,15 +38,18 @@ namespace FPS.GLInterface {
 			//Vertex Data
 			GL.BindBuffer(BufferTarget.ArrayBuffer, _buffs [VERT_INDEX]);
 			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(Verts.Length * VS), Verts, BufferUsageHint.StaticDraw);
+			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 		}
 
 		public void Render() {
-			GL.InterleavedArrays(InterleavedArrayFormat.T2fC4fN3fV3f, 0, (IntPtr)0);
 			GL.BindBuffer(BufferTarget.ArrayBuffer, _buffs [VERT_INDEX]);
-			GL.TexCoordPointer(2, TexCoordPointerType.Float, VS, 0);
-			GL.NormalPointer(NormalPointerType.Float, VS, V2S); //Offset by one vector2
-			GL.VertexPointer(3, VertexPointerType.Float, VS, V2S + V3S); //Offset by one Vector2 and one Vector3
-			GL.DrawArrays(BeginMode.Triangles, 0, _numverts);
+			GL.InterleavedArrays(InterleavedArrayFormat.T2fN3fV3f, 0, (IntPtr)0);
+
+			GL.PointSize(3f);
+			GL.DrawArrays(BeginMode.Triangles, 0, _numverts / 3);
+
+			//Unbind buffer
+			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 		}
 
 		~Model() {
@@ -80,6 +83,7 @@ namespace FPS.GLInterface {
 	class OBJModelParser : IModelParser {
 		static readonly char[] SPACE = " ".ToCharArray();
 		static readonly char[] FSLASH = "/".ToCharArray();
+		static OBJModelParser INSTANCE = new OBJModelParser();
 
 		public Model Parse(string FName) {
 			if (!FName.EndsWith(".obj"))
@@ -92,44 +96,49 @@ namespace FPS.GLInterface {
 			int linecount = 0;
 			int objcount = 0;
 			using (StreamReader s = new StreamReader(FName)) {
-				++linecount;
-				line = s.ReadLine().Split(SPACE);
-				switch (line [0]) {
-				case "v":
-					pos.Add(ReadVec3(line));
-					break;
-				case "vn":
-					norm.Add(ReadVec3(line));
-					break;
-				case "vt":
-					tex.Add(ReadVec2(line));
-					break;
-				case "f":
-					if (line.Length > 4) {
-						ThrowBadValue("Faces must be tris.", "f", linecount, 1);
-					}
-					ReadFace(line, pos, norm, tex, tr);
-					break;
+				while (!s.EndOfStream) {
+					++linecount;
+					line = s.ReadLine().Split(SPACE);
+					switch (line [0]) {
+					case "v":
+						pos.Add(ReadVec3(line));
+						break;
+					case "vn":
+						norm.Add(ReadVec3(line));
+						break;
+					case "vt":
+						tex.Add(ReadVec2(line));
+						break;
+					case "f":
+						if (line.Length > 4) {
+							ThrowBadValue("Faces must be tris.", "f", linecount, 1);
+						}
+						ReadFace(line, ref pos, ref norm, ref tex, ref tr);
+						break;
 				#region Error handling.
-				case "o":
-					//Make sure only one object, but other than that do nothing.
-					++objcount;
-					if (objcount > 1) {
-						ThrowBadValue("Too many objects!", line [0], linecount, 1);
-					}
-					break;
-				case "s":
-					//Ignore shading.
-					break;
-				case "usemtl":
-					//Ignore material
-					break;
-				default:
-					if (!line [0].StartsWith("#")) {
-						ThrowBadValue("Unsupported directive.", line [0], linecount, 1);
-					}
-					break;
+					case "o":
+						//Make sure only one object, but other than that do nothing.
+						++objcount;
+						if (objcount > 1) {
+							ThrowBadValue("Too many objects!", line [0], linecount, 1);
+						}
+						break;
+					case "s":
+						//Ignore shading.
+						break;
+					case "usemtl":
+						//Ignore material
+						break;
+					case "mtllib":
+						//Ignore material lib.
+						break;
+					default:
+						if (!line [0].StartsWith("#")) {
+							ThrowBadValue("Unsupported directive.", line [0], linecount, 1);
+						}
+						break;
 				#endregion
+					}
 				}
 			}
 			return new Model(tr.ToArray());
@@ -150,13 +159,13 @@ namespace FPS.GLInterface {
 			return tmp;
 		}
 
-		void ReadFace(string[] Line, List<Vector3> Pos, List<Vector3> Norm, List<Vector2> Tex, List<Vertex> Out) {
+		void ReadFace(string[] Line, ref List<Vector3> Pos, ref List<Vector3> Norm, ref List<Vector2> Tex, ref List<Vertex> Out) {
 			for (int i = 0; i < 3; ++i) {
 				string[] v = Line [i + 1].Split(FSLASH);
 				Vertex tmp = new Vertex();
-				tmp.Position = Pos [int.Parse(v [0])];
-				tmp.TexCoord = Tex [int.Parse(v [1])];
-				tmp.Normal = Norm [int.Parse(v [2])];
+				tmp.Position = Pos [int.Parse(v [0]) - 1];
+				tmp.TexCoord = Tex [int.Parse(v [1]) - 1];
+				tmp.Normal = Norm [int.Parse(v [2]) - 1];
 				Out.Add(tmp);
 			}
 		}
@@ -164,6 +173,10 @@ namespace FPS.GLInterface {
 		void ThrowBadValue(string Reason, string Val, int Row, int Col) {
 			string err = string.Format("Invalid character {0} at ({1}, {2}). {3}", Val, Row, Col, Reason);
 			throw new ArgumentException(err);
+		}
+
+		public static OBJModelParser GetInstance() {
+			return INSTANCE;
 		}
 	}
 }

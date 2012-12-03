@@ -4,7 +4,7 @@ namespace FPS.Game.HMap {
 	public class Chunk {
 		public const int CHUNK_SIZE = 32;
 
-		float[,] _data;
+		float[][] _data;
 		int _x, _y;
 
 		public int X {
@@ -17,7 +17,7 @@ namespace FPS.Game.HMap {
 			set { _y = value; }
 		}
 
-		public Chunk(int X, int Y, float[,] Data) {
+		public Chunk(int X, int Y, float[][] Data) {
 			_x = X;
 			_y = Y;
 			_data = Data;
@@ -29,14 +29,14 @@ namespace FPS.Game.HMap {
 					LX += CHUNK_SIZE;
 				if (LY < 0)
 					LY += CHUNK_SIZE;
-				return _data [LX, LY];
+				return _data [LX] [LY];
 			}
 			set {
 				if (LX < 0)
 					LX += CHUNK_SIZE;
 				if (LY < 0)
 					LY += CHUNK_SIZE;
-				_data [LX, LY] = value;
+				_data [LX] [LY] = value;
 			}
 		}
 

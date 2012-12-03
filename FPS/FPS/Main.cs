@@ -82,12 +82,12 @@ namespace FPS {
 
 		protected override void OnRenderFrame(FrameEventArgs e) {
 			_timer.Start();
-			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+			GL.Clear(ClearBufferMask.DepthBufferBit);
 			_ren.Render();
 			GLUtil.PrintGLError("Main");
-			SwapBuffers();
 			++_frame;
 			_timer.Stop();
+			SwapBuffers();
 			if (_frame % 60 == 59) {
 				Console.WriteLine((float)Stopwatch.Frequency / (_timer.ElapsedTicks / 60f));
 				_timer.Reset();

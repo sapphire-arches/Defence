@@ -7,7 +7,7 @@ void doBasePre() {
     if (!gl_FrontFacing)
         discard;
 #endif
-    texture2D(tex, gl_TexCoord[0].st);
+    gl_FragColor = texture2D(tex, gl_TexCoord[0].st);
     //gl_FragColor.r *= gl_Color.r;
     //gl_FragColor.g *= gl_Color.g;
     //gl_FragColor.b *= gl_Color.b;

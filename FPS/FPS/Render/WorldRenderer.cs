@@ -98,8 +98,10 @@ namespace FPS.Render {
 		public void Render() {
 			GLUtil.PrintGLError("Prerender");
 			if (_pos.Y > 0) {
+				SetFogAndClear(OpenTK.Graphics.Color4.SkyBlue);
 				_simple.Use();
 			} else {
+				SetFogAndClear(OpenTK.Graphics.Color4.DeepSkyBlue);
 				_underwater.Use();
 			}
 			_modelview = Matrix4.Identity;
@@ -108,7 +110,7 @@ namespace FPS.Render {
 			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateFromAxisAngle(Vector3.UnitX, -_pitch));
 
 			LoadMatricies();
-			_hmap.Render(_pos.X, _pos.Z);
+			_hmap.Render(this, _pos.X, _pos.Z);
 
 			PushMatrix();
 			foreach (IEntity ent in _for.Ents) {
@@ -120,7 +122,7 @@ namespace FPS.Render {
 			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 			_water.Use();
 			LoadMatricies();
-			_hmap.RenderWater(_pos.X, _pos.Z);
+			_hmap.RenderWater(this, _pos.X, _pos.Z);
 			GL.Disable(EnableCap.Blend);
 		}
 
@@ -158,9 +160,25 @@ namespace FPS.Render {
 
 		public void BindTexture(int id) {
 			int texloc = _curr.GetUniformLocation("tex");
+			GLUtil.PrintGLError("TexLoc");
 			GL.Uniform1(texloc, 0);
+			GLUtil.PrintGLError("TexUniform");
 			GL.ActiveTexture(TextureUnit.Texture0);
+			GLUtil.PrintGLError("TexActive");
 			GL.BindTexture(TextureTarget.Texture2D, id);
+			GLUtil.PrintGLError("TexBind");
+		}
+
+		void SetFogAndClear(OpenTK.Graphics.Color4 C) {
+			GL.ClearColor(OpenTK.Graphics.Color4.DeepSkyBlue);
+			float[] fogColor = {
+				OpenTK.Graphics.Color4.DeepSkyBlue.R,
+				OpenTK.Graphics.Color4.DeepSkyBlue.G,
+				OpenTK.Graphics.Color4.DeepSkyBlue.B,
+				OpenTK.Graphics.Color4.DeepSkyBlue.A
+			};
+			GL.Fog(FogParameter.FogColor, fogColor);
+			GL.Clear(ClearBufferMask.ColorBufferBit);
 		}
 
 		void LoadMatricies() {

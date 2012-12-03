@@ -9,9 +9,11 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK;
 
 namespace FPS.GLInterface {
+
 	//Vertex definition following interleaved format T2fC4fN3fV3f
 	[StructLayout(LayoutKind.Sequential)]
 	public struct Vertex {
+		public static readonly int Size = Marshal.SizeOf(new Vertex());
 		public Vector2 TexCoord;
 		public Vector4 Color;
 		public Vector3 Normal;
@@ -27,33 +29,17 @@ namespace FPS.GLInterface {
 		int _texid;
 		//Number of verts
 		int _numverts;
-		//Size constants
-		static int VS = 0;
 
 		public Model(Vertex[] Verts, Bitmap Texture) {
-			if (VS == 0) {
-				VS = Marshal.SizeOf(Verts [0]);
-			}
 			_buffs = new uint[NUM_BUFFS];
 			_numverts = Verts.Length;
 			GL.GenBuffers(NUM_BUFFS, _buffs);
 			//Vertex Data
 			GL.BindBuffer(BufferTarget.ArrayBuffer, _buffs [VERT_INDEX]);
-			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(Verts.Length * VS), Verts, BufferUsageHint.StaticDraw);
+			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(Verts.Length * Vertex.Size), Verts, BufferUsageHint.StaticDraw);
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 			//Texture data
-			BitmapData data = Texture.LockBits(
-				new Rectangle(0, 0, Texture.Width, Texture.Height),
-				ImageLockMode.ReadOnly,
-				System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-			_texid = GL.GenTexture();
-			GL.BindTexture(TextureTarget.Texture2D, _texid);
-			GL.TexImage2D(TextureTarget.Texture2D, 0,
-			              PixelInternalFormat.Rgba, data.Width, data.Height,
-			              0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-			Texture.UnlockBits(data);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+			_texid = GLUtil.CreateTexture(Texture);
 		}
 
 		public void Render(WorldRenderer WR) {

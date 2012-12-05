@@ -12,9 +12,11 @@ namespace FPS.Game.Entity {
 		protected Vector3 _pos;
 		protected Vector3 _vel;
 		protected Vector3 _acc;
+		protected float _delta;
+		protected AABB _bounds;
+		int _health;
 		float _pitch;
 		float _yaw;
-		protected float _delta;
 		bool _onGround;
 
 		public float Pitch {
@@ -51,8 +53,14 @@ namespace FPS.Game.Entity {
 			private set { _onGround = value; }
 		}
 
-		public IEntity(Vector3 Pos) {
+		public int Health {
+			get { return _health; }
+			private set { _health = value;}
+		}
+
+		public IEntity(Vector3 Pos, AABB Bounds) {
 			_pos = Pos;
+			_bounds = Bounds;
 			_vel = new Vector3(0, 0, 0);
 			_acc = new Vector3(0, 0, 0);
 		}
@@ -61,8 +69,21 @@ namespace FPS.Game.Entity {
 			_vel.X *= C_OF_FRICTION;
 			_vel.Z *= C_OF_FRICTION;
 			ApplyForce(World.GRAVITY);
+			bool move = true;
 			_pos += _vel;
 			_vel += _acc;
+			foreach (IEntity ent in W.Ents) {
+				bool colide = this.Collides(ent);
+				if (colide) {
+					Console.WriteLine("{0} {1}", this, ent);
+				}
+				move &= !colide;
+			}
+			if (!move) {
+				_pos -= _vel;
+				_vel -= _acc;
+				_vel = new Vector3(0, 0, 0);
+			}
 			_acc.X = _acc.Y = _acc.Z = 0;
 
 			float mheight = W.Terrain [_pos.X, _pos.Z];
@@ -72,6 +93,8 @@ namespace FPS.Game.Entity {
 			} else {
 				_onGround = false;
 			}
+			if (_pos.Y - mheight < 0.01)
+				_onGround = true;
 
 			if (-BOUNDS_SIZE > _pos.X || _pos.X > BOUNDS_SIZE)
 				_pos.X = Math.Sign(_pos.X) * BOUNDS_SIZE;
@@ -84,6 +107,60 @@ namespace FPS.Game.Entity {
 			_acc += Vector3.Multiply(Force, _delta);
 		}
 
+		public bool Collides(IEntity Other) {
+			_bounds.Pos = _pos - new Vector3(_bounds.Width / 2, 0, _bounds.Depth / 2);
+			Other._bounds.Pos = Other._pos - new Vector3(Other._bounds.Width / 2, 0, Other._bounds.Depth / 2);
+			Console.WriteLine("{0} {1}", _bounds, Other._bounds);
+			return _bounds.Intersects(Other._bounds);
+		}
+
 		public abstract void Render(WorldRenderer In);
+
+		public override string ToString() {
+			return string.Format("{0} {1}", Pos, GetType());
+		}
+	}
+
+	public struct AABB {
+		public Vector3 Pos;
+		public float Width, Height, Depth;
+
+		public AABB(float Width, float Height, float Depth) {
+			this.Width = Width;
+			this.Depth = Depth;
+			this.Height = Height;
+		}
+
+		public bool Intersects(AABB Other) {
+			/*
+			 * +---+
+			 * |   |
+			 * |  ++--+
+			 * |  ||  |
+			 * |  ++--+
+			 * |   |
+			 * +---+
+			 */
+			Vector3 op = Other.Pos;
+			return
+				PointIn(op.X, op.Y, op.Z) ||
+				PointIn(op.X + Other.Width, op.Y, op.Z) ||
+				PointIn(op.X, op.Y + Other.Height, op.Z) ||
+				PointIn(op.X, op.Y, op.Z + Other.Depth) ||
+				PointIn(op.X + Other.Width, op.Y + Other.Height, op.Z) ||
+				PointIn(op.X + Other.Width, op.Y, op.Z + Other.Depth) ||
+				PointIn(op.X, op.Y + Other.Height, op.Z + Other.Depth) ||
+				PointIn(op.X + Other.Width, op.Y + Other.Height, op.Z + Other.Depth);
+		}
+
+		public bool PointIn(float X, float Y, float Z) {
+			return (Pos.X < X && X < Pos.X + Width) &&
+			//(Pos.Y < Y && Y < Pos.Y + Height) &&
+				(Pos.Z < Z && Z < Pos.Z + Depth);
+		}
+
+		public override string ToString() {
+			return string.Format("{0} [{1}, {2}, {3}]", Pos, Width, Height, Depth);
+		}
 	}
 }

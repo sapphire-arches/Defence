@@ -4,7 +4,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace FPS.GLInterface {
 	public class Shader {
-		public const bool SHADERDEBUG = false;
+		public const bool SHADERDEBUG = true;
 		int _id;
 
 		public int ID {

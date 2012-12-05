@@ -11,8 +11,8 @@ namespace FPS.Render {
 		public const float MAX_DEPTH = 128f;
 		public const float FOV = (float)(0.5 * Math.PI); //90 degrees
 		const float HALFPI = (float)(0.5 * Math.PI);
-		public const float MAX_PITCH = HALFPI;
-		public const float MIN_PITCH = HALFPI * -0.1f;
+		public const float MAX_PITCH = HALFPI * 1f;
+		public const float MIN_PITCH = HALFPI * -1f;
 
 		World _for;
 		HeightmapRenderer _hmap;
@@ -106,8 +106,8 @@ namespace FPS.Render {
 			}
 			_modelview = Matrix4.Identity;
 			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateTranslation(-_pos.X, -_pos.Y, -_pos.Z));
-			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateFromAxisAngle(Vector3.UnitY, -_yaw));
-			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateFromAxisAngle(Vector3.UnitX, -_pitch));
+			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateFromAxisAngle(Vector3.UnitY, _yaw));
+			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateFromAxisAngle(Vector3.UnitX, _pitch));
 
 			LoadMatricies();
 			_hmap.Render(this, _pos.X, _pos.Z);

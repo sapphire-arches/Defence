@@ -21,15 +21,15 @@ namespace FPS {
 		int _frame;
 		PlayerEntity _pe;
 		bool _capMouse;
+		bool _lmbDown;
 
 		public MainClass() : base(800, 600, OpenTK.Graphics.GraphicsMode.Default, "Defend Rome") {
 		}
 
-		protected override void OnLoad(EventArgs e) {
+		protected override void OnLoad(EventArgs args) {
 			_map = new HeightMap("res/map.map");
-			_world = new World(_map);
 			_pe = new PlayerEntity(new Vector3(0, 20, 0));
-			_world.Ents.AddFirst(_pe);
+			_world = new World(_map, _pe);
 			_ren = new WorldRenderer(this, _world, (float)Width / Height);
 			_camOffset = new Vector3();
 			GL.ClearColor(OpenTK.Graphics.Color4.SkyBlue);
@@ -53,9 +53,17 @@ namespace FPS {
 			System.Windows.Forms.Cursor.Hide();
 			_timer = new Stopwatch();
 			_capMouse = true;
+			Mouse.ButtonDown += delegate(object sender, MouseButtonEventArgs e) {
+				if (e.Button == OpenTK.Input.MouseButton.Left)
+					_lmbDown = true;
+			};
+			Mouse.ButtonUp += delegate(object sender, MouseButtonEventArgs e) {
+				if (e.Button == OpenTK.Input.MouseButton.Left)
+					_lmbDown = false;
+			};
 		}
 
-		protected override void OnUpdateFrame(FrameEventArgs e) {
+		protected override void OnUpdateFrame(FrameEventArgs args) {
 			if (Keyboard [Key.Escape]) {
 				_capMouse = false;
 			}
@@ -71,6 +79,9 @@ namespace FPS {
 			}
 
 			_pe.Move(Keyboard, _mouseDelta);
+			if (_lmbDown)
+				_pe.SwingSword();
+
 			_world.Tick(1);
 
 			_camOffset.Y = _pe.GetEyeOffset();
@@ -78,6 +89,13 @@ namespace FPS {
 			_ren.Pos = Vector3.Add(_pe.Pos, _camOffset);
 			_ren.Pitch = _pe.Pitch;
 			_ren.Yaw = _pe.Yaw;
+
+			foreach (IEntity ent in _world.Ents) {
+				Enemy e = ent as Enemy;
+				if (e != null) {
+					e.AI(_world);
+				}
+			}
 		}
 
 		protected override void OnRenderFrame(FrameEventArgs e) {

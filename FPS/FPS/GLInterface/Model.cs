@@ -116,7 +116,7 @@ namespace FPS.GLInterface {
 						}
 						ReadFace(line, ref pos, ref norm, ref tex, ref tr);
 						break;
-				#region Error handling.
+					#region Error handling.
 					case "o":
 						//Make sure only one object, but other than that do nothing.
 						++objcount;
@@ -138,7 +138,7 @@ namespace FPS.GLInterface {
 							ThrowBadValue("Unsupported directive.", line [0], linecount, 1);
 						}
 						break;
-				#endregion
+                    #endregion
 					}
 				}
 			}
@@ -169,6 +169,7 @@ namespace FPS.GLInterface {
 				tmp.Color.Y = 1;//(float)r.NextDouble();
 				tmp.Color.Z = 1;//(float)r.NextDouble();
 				tmp.TexCoord = Tex [int.Parse(v [1]) - 1];
+				tmp.TexCoord.Y = 1 - tmp.TexCoord.Y; //fix sillyness
 				tmp.Normal = Norm [int.Parse(v [2]) - 1];
 				Out.Add(tmp);
 			}

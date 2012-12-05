@@ -107,7 +107,7 @@ namespace FPS.Render {
 			const double halfpi = Math.PI / 2;
 			const double fudge = halfpi / 10;
 			double half = (WorldRenderer.FOV + fudge) / 2;
-			double negyaw = CorrectAngle(-_in.Yaw - halfpi);
+			double negyaw = CorrectAngle(_in.Yaw - halfpi);
 
 			return AngleCmp(tl, negyaw, half) ||
 				AngleCmp(tr, negyaw, half) ||

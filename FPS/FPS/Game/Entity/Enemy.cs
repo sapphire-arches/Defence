@@ -14,10 +14,7 @@ namespace FPS.Game.Entity {
 		}
 
 		public void AI(World W) {
-			IEntity pe = W.Ents.First.Value;//W.GetPlayer();
-			if (pe == this) {
-				pe = W.Ents.First.Next.Value;
-			}
+			IEntity pe = W.GetPlayer();
 
 			Vector3 delta = Vector3.Multiply(Vector3.Normalize(Vector3.Subtract(pe.Pos, _pos)), PlayerEntity.MOVE_SPEED * 0.9f);
 			ApplyForce(delta);

@@ -31,6 +31,21 @@ namespace FPS.GLInterface {
 
 			return texid;
 		}
+
+		public static void UpdateTexture(Bitmap To, int Texture) {
+			BitmapData data = To.LockBits(
+				new Rectangle(0, 0, To.Width, To.Height),
+				ImageLockMode.ReadOnly,
+				System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+			int texid = Texture;
+			GL.BindTexture(TextureTarget.Texture2D, texid);
+			GL.TexImage2D(TextureTarget.Texture2D, 0,
+			              PixelInternalFormat.Rgba, data.Width, data.Height,
+			              0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+			To.UnlockBits(data);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+		}
 	}
 }
 

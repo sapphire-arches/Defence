@@ -51,7 +51,7 @@ namespace FPS.GLInterface {
 		}
 
 		~ShaderProgram() {
-			GL.DeleteProgram(_programID);
+			//GL.DeleteProgram(_programID);
 		}
 
 		void EnsureLink() {

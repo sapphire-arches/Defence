@@ -73,16 +73,16 @@ namespace FPS.Game.Entity {
 			_pos += _vel;
 			_vel += _acc;
 			foreach (IEntity ent in W.Ents) {
-				bool colide = this.Collides(ent);
-				if (colide) {
-					Console.WriteLine("{0} {1}", this, ent);
+				if (ent != this) {
+					bool colide = this.Collides(ent);
+					if (colide) {
+					}
+					move &= !colide;
 				}
-				move &= !colide;
 			}
 			if (!move) {
 				_pos -= _vel;
 				_vel -= _acc;
-				_vel = new Vector3(0, 0, 0);
 			}
 			_acc.X = _acc.Y = _acc.Z = 0;
 
@@ -110,7 +110,6 @@ namespace FPS.Game.Entity {
 		public bool Collides(IEntity Other) {
 			_bounds.Pos = _pos - new Vector3(_bounds.Width / 2, 0, _bounds.Depth / 2);
 			Other._bounds.Pos = Other._pos - new Vector3(Other._bounds.Width / 2, 0, Other._bounds.Depth / 2);
-			Console.WriteLine("{0} {1}", _bounds, Other._bounds);
 			return _bounds.Intersects(Other._bounds);
 		}
 
@@ -155,7 +154,7 @@ namespace FPS.Game.Entity {
 
 		public bool PointIn(float X, float Y, float Z) {
 			return (Pos.X < X && X < Pos.X + Width) &&
-			//(Pos.Y < Y && Y < Pos.Y + Height) &&
+			//(Pos.Y <= Y && Y <= Pos.Y + Height) &&
 				(Pos.Z < Z && Z < Pos.Z + Depth);
 		}
 

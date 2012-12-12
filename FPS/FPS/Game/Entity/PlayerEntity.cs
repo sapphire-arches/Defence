@@ -49,7 +49,7 @@ namespace FPS.Game.Entity {
 				moved = true;
 			}
 			if (KD [Key.Space] && this.OnGround) {
-				moveForce.Y += JUMP_FORCE;
+				//moveForce.Y += JUMP_FORCE;
 			}
 			if (moved)
 				++_walkFrame;

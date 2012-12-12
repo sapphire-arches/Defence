@@ -33,7 +33,7 @@ namespace FPS.GLInterface {
 		}
 
 		~Shader() {
-			GL.DeleteShader(_id);
+			//GL.DeleteShader(_id);
 		}
 	}
 

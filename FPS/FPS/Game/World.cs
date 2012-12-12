@@ -28,6 +28,7 @@ namespace FPS.Game {
 			_ents.AddFirst(pe);
 			_ents.AddFirst(new Enemy(new Vector3(10, Terrain [0, 0], 10)));
 			_ents.AddFirst(new Enemy(new Vector3(10, Terrain [0, 0], -10.1f)));
+			_ents.AddFirst(new Enemy(new Vector3(-10, Terrain [0, 0], -10.1f)));
 		}
 
 		public void Tick(float Delta) {

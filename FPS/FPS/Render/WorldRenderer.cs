@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using FPS.Game;
 using FPS.Game.Entity;
 using FPS.GLInterface;
@@ -28,6 +29,11 @@ namespace FPS.Render {
 		Vector3 _pos;
 		Stack<Matrix4> _mviewstack;
 		MainClass _in;
+		Bitmap _2d;
+		int _2dTex;
+		int _2dvbo;
+		bool _2dchanged;
+		int _oldwidth, _oldheight;
 
 		public float Pitch {
 			get { return _pitch; }
@@ -93,9 +99,25 @@ namespace FPS.Render {
 			_pos = new Vector3(10, 2, 10);
 			_mviewstack = new Stack<Matrix4>();
 			_in = In;
+			_2d = new Bitmap(_in.Width, _in.Height);
+			_2dTex = GLUtil.CreateTexture(_2d);
+			_oldwidth = 0;
+			_oldheight = 0;
+			_2dvbo = GL.GenBuffer();
+			Vertex[] d = BuildSquare();
+			GL.BindBuffer(BufferTarget.ArrayBuffer, _2dvbo);
+			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(d.Length * Vertex.Size), d, BufferUsageHint.StaticDraw);
+			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 		}
 
 		public void Render() {
+			if (_oldwidth != _in.Width || _oldheight != _in.Height) {
+				_2d = new Bitmap(_in.Width, _in.Height);
+				_oldwidth = _in.Width;
+				_oldheight = _in.Height;
+				_2dchanged = true;
+			}
+
 			GLUtil.PrintGLError("Prerender");
 			if (_pos.Y > 0) {
 				SetFogAndClear(OpenTK.Graphics.Color4.SkyBlue);
@@ -169,6 +191,11 @@ namespace FPS.Render {
 			GLUtil.PrintGLError("TexBind");
 		}
 
+		public Graphics Get2DDrawGraphics() {
+			_2dchanged = true;
+			return Graphics.FromImage(_2d);
+		}
+
 		void SetFogAndClear(OpenTK.Graphics.Color4 C) {
 			GL.ClearColor(OpenTK.Graphics.Color4.DeepSkyBlue);
 			float[] fogColor = {
@@ -187,6 +214,67 @@ namespace FPS.Render {
 			GL.UniformMatrix4(projectionLoc, false, ref _projectionMatrix);
 			GL.UniformMatrix4(modelviewLoc, false, ref _modelview);
 			GLUtil.PrintGLError("Matricies");
+		}
+
+		public void Do2DDraw() {
+			GL.Enable(EnableCap.Blend);
+			int _sdrid;
+			GL.GetInteger(GetPName.CurrentProgram, out _sdrid);
+			GL.UseProgram(0);
+
+			if (_2dchanged) {
+				GLUtil.UpdateTexture(_2d, _2dTex);
+				_2dchanged = false;
+			}
+
+			GL.Disable(EnableCap.DepthTest);
+			GL.MatrixMode(MatrixMode.Modelview);
+			Matrix4 magic = Matrix4.CreateOrthographicOffCenter(0, 1, 1, 0, -1, 1);
+			GL.LoadMatrix(ref magic);
+			GL.MatrixMode(MatrixMode.Projection);
+			GL.LoadIdentity();
+
+			GL.BindTexture(TextureTarget.Texture2D, _2dTex);
+			GL.Enable(EnableCap.Texture2D);
+			
+			GL.BindBuffer(BufferTarget.ArrayBuffer, _2dvbo);
+			GL.InterleavedArrays(InterleavedArrayFormat.T2fC4fN3fV3f, 0, (IntPtr)0);
+			GL.DrawArrays(BeginMode.Quads, 0, 4);
+
+			//XXX:Restore state
+			GL.UseProgram(_sdrid);
+			GL.Enable(EnableCap.DepthTest);
+			GL.Disable(EnableCap.Texture2D);
+			GL.Disable(EnableCap.Blend);
+		}
+
+		Vertex[] BuildSquare() {
+			Vertex[] tr = new Vertex[4];
+			for (int i = 0; i < tr.Length; ++i) {
+				tr [i] = new Vertex();
+				tr [i].Color = new Vector4(1, 1, 1, 1);
+			}
+			tr [0].Position.X = 0;
+			tr [0].Position.Y = 0;
+			tr [0].TexCoord.X = 0;
+			tr [0].TexCoord.Y = 0;
+			
+			tr [1].Position.X = 0;
+			tr [1].Position.Y = 1;
+			tr [1].TexCoord.X = 0;
+			tr [1].TexCoord.Y = 1;
+			
+			tr [2].Position.X = 1;
+			tr [2].Position.Y = 1;
+			tr [2].TexCoord.X = 1;
+			tr [2].TexCoord.Y = 1;
+			
+			tr [3].Position.X = 1;
+			tr [3].Position.Y = 0;
+			tr [3].TexCoord.X = 1;
+			tr [3].TexCoord.Y = 0;
+
+			return tr;
 		}
 	}
 }

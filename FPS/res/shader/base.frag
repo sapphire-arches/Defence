@@ -1,6 +1,7 @@
 #define FOG
 
 uniform sampler2D tex;
+uniform float highlight;
 
 void doBasePre() {
 #ifndef DEBUG
@@ -8,9 +9,9 @@ void doBasePre() {
         discard;
 #endif
     gl_FragColor = texture2D(tex, gl_TexCoord[0].st);
-    //gl_FragColor.r *= gl_Color.r;
-    //gl_FragColor.g *= gl_Color.g;
-    //gl_FragColor.b *= gl_Color.b;
+    gl_FragColor.r *= highlight;
+    gl_FragColor.g *= highlight;
+    gl_FragColor.b *= highlight;
     //gl_FragColor.a = 1.0;
 }
 

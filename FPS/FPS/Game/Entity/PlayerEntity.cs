@@ -12,6 +12,7 @@ namespace FPS.Game.Entity {
 		public static readonly float JUMP_FORCE = 1f;
 		public const float MAX_JUMP_FORCE = 10f;
 		public const float MOUSE_SPEED = 0.001f;
+		public const float KNOCKBACK = 2;
 		const float HALFPI = (float)(Math.PI * 0.5);
 		const int SWING_FRAMES = 10;
 
@@ -96,6 +97,12 @@ namespace FPS.Game.Entity {
 				}
 				if (dmg != null) {
 					dmg.Hurt(10);
+					dmg.ApplyForce(new Vector3(
+						(float)-Math.Sin(-Yaw) * KNOCKBACK,
+						0,
+						(float)-Math.Cos(-Yaw) * KNOCKBACK
+					)
+					);
 				}
 			}
 		}

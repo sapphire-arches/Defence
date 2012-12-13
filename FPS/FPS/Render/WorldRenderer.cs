@@ -8,8 +8,10 @@ using FPS.GLInterface;
 using OpenTK.Graphics.OpenGL;
 using OpenTK;
 
-namespace FPS.Render {
-	public class WorldRenderer {
+namespace FPS.Render
+{
+	public class WorldRenderer
+	{
 		public const float MAX_DEPTH = 128f;
 		public const float FOV = (float)(0.5 * Math.PI); //90 degrees
 		const float HALFPI = (float)(0.5 * Math.PI);
@@ -69,212 +71,233 @@ namespace FPS.Render {
 			get { return _aspect; }
 			set { 
 				_aspect = value;
-				_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(FOV), _aspect, 0.01f, MAX_DEPTH);
+				_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView ((float)(FOV), _aspect, 0.01f, MAX_DEPTH);
 			}
 		}
 
-		public WorldRenderer(MainClass In, World For, float Aspect) {
+		public WorldRenderer (MainClass In, World For, float Aspect)
+		{
 			_for = For;
-			_hmap = new HeightmapRenderer(this, _for.Terrain);
-			FragmentShader fsimple = new FragmentShader("res/shader/simple.frag");
-			FragmentShader fwater = new FragmentShader("res/shader/water.frag");
-			FragmentShader fuwater = new FragmentShader("res/shader/underwater.frag");
+			_hmap = new HeightmapRenderer (this, _for.Terrain);
+			FragmentShader fsimple = new FragmentShader ("res/shader/simple.frag");
+			FragmentShader fwater = new FragmentShader ("res/shader/water.frag");
+			FragmentShader fuwater = new FragmentShader ("res/shader/underwater.frag");
 
-			_simple = new ShaderProgram();
-			_simple.AddFragShader(fsimple);
-			GLUtil.PrintGLError("Simple");
+			_simple = new ShaderProgram ();
+			_simple.AddFragShader (fsimple);
+			GLUtil.PrintGLError ("Simple");
 
-			_underwater = new ShaderProgram();
-			_underwater.AddFragShader(fuwater);
-			GLUtil.PrintGLError("Underwater");
+			_underwater = new ShaderProgram ();
+			_underwater.AddFragShader (fuwater);
+			GLUtil.PrintGLError ("Underwater");
 
-			_water = new ShaderProgram();
-			_water.AddFragShader(fwater);
-			GLUtil.PrintGLError("Water");
+			_water = new ShaderProgram ();
+			_water.AddFragShader (fwater);
+			GLUtil.PrintGLError ("Water");
 
 			_curr = _simple;
 
 			_aspect = Aspect;
-			_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(FOV), _aspect, 0.01f, MAX_DEPTH);
-			_modelview = Matrix4.CreateTranslation(-10f, -5f, -10f);
-			_pos = new Vector3(10, 2, 10);
-			_mviewstack = new Stack<Matrix4>();
+			_projectionMatrix = Matrix4.CreatePerspectiveFieldOfView ((float)(FOV), _aspect, 0.01f, MAX_DEPTH);
+			_modelview = Matrix4.CreateTranslation (-10f, -5f, -10f);
+			_pos = new Vector3 (10, 2, 10);
+			_mviewstack = new Stack<Matrix4> ();
 			_in = In;
-			_2d = new Bitmap(_in.Width, _in.Height);
-			_2dTex = GLUtil.CreateTexture(_2d);
+			_2d = new Bitmap (_in.Width, _in.Height);
+			_2dTex = GLUtil.CreateTexture (_2d);
 			_oldwidth = 0;
 			_oldheight = 0;
-			_2dvbo = GLUtil.BuildRectangle(0, 0, 1, 1);
+			_2dvbo = GLUtil.BuildRectangle (0, 0, 1, 1);
 		}
 
-		public void Render() {
+		public void Render ()
+		{
 			if (_oldwidth != _in.Width || _oldheight != _in.Height) {
-				_2d = new Bitmap(_in.Width, _in.Height);
+				_2d = new Bitmap (_in.Width, _in.Height);
 				_oldwidth = _in.Width;
 				_oldheight = _in.Height;
 				_2dchanged = true;
 			}
 
-			GLUtil.PrintGLError("Prerender");
+			GLUtil.PrintGLError ("Prerender");
 			if (_pos.Y > 0) {
-				SetFogAndClear(OpenTK.Graphics.Color4.SkyBlue);
-				_simple.Use();
+				SetFogAndClear (OpenTK.Graphics.Color4.SkyBlue);
+				_simple.Use ();
 			} else {
-				SetFogAndClear(OpenTK.Graphics.Color4.DeepSkyBlue);
-				_underwater.Use();
+				SetFogAndClear (OpenTK.Graphics.Color4.DeepSkyBlue);
+				_underwater.Use ();
 			}
+			SetHighlight (1);
 			_modelview = Matrix4.Identity;
-			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateTranslation(-_pos.X, -_pos.Y, -_pos.Z));
-			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateFromAxisAngle(Vector3.UnitY, _yaw));
-			_modelview = Matrix4.Mult(_modelview, Matrix4.CreateFromAxisAngle(Vector3.UnitX, _pitch));
+			_modelview = Matrix4.Mult (_modelview, Matrix4.CreateTranslation (-_pos.X, -_pos.Y, -_pos.Z));
+			_modelview = Matrix4.Mult (_modelview, Matrix4.CreateFromAxisAngle (Vector3.UnitY, _yaw));
+			_modelview = Matrix4.Mult (_modelview, Matrix4.CreateFromAxisAngle (Vector3.UnitX, _pitch));
 
-			LoadMatricies();
-			_hmap.Render(this, _pos.X, _pos.Z);
+			LoadMatricies ();
+			_hmap.Render (this, _pos.X, _pos.Z);
 
-			PushMatrix();
+			PushMatrix ();
 			foreach (IEntity ent in _for.Ents) {
-				ent.Render(this);
+				ent.Render (this);
 			}
-			PopMatrix();
+			PopMatrix ();
 
-			GL.Enable(EnableCap.Blend);
-			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-			_water.Use();
-			LoadMatricies();
-			_hmap.RenderWater(this, _pos.X, _pos.Z);
-			GL.Disable(EnableCap.Blend);
+			GL.Enable (EnableCap.Blend);
+			GL.BlendFunc (BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+			_water.Use ();
+			SetHighlight (1);
+			LoadMatricies ();
+			_hmap.RenderWater (this, _pos.X, _pos.Z);
+			GL.Disable (EnableCap.Blend);
 		}
 
-		public int GetFrame() {
-			return _in.GetFrame();
+		public int GetFrame ()
+		{
+			return _in.GetFrame ();
 		}
 
-		public void PushMatrix() {
-			_mviewstack.Push(_modelview);
+		public void PushMatrix ()
+		{
+			_mviewstack.Push (_modelview);
 		}
 
-		public void PopMatrix() {
-			_modelview = _mviewstack.Pop();
-			int modelviewLoc = _curr.GetUniformLocation("modelview");
-			GL.UniformMatrix4(modelviewLoc, false, ref _modelview);
+		public void PopMatrix ()
+		{
+			_modelview = _mviewstack.Pop ();
+			int modelviewLoc = _curr.GetUniformLocation ("modelview");
+			GL.UniformMatrix4 (modelviewLoc, false, ref _modelview);
 		}
 
-		public void LoadIdent() {
+		public void LoadIdent ()
+		{
 			_modelview = Matrix4.Identity;
-			int modelviewLoc = _curr.GetUniformLocation("modelview");
-			GL.UniformMatrix4(modelviewLoc, false, ref _modelview);
+			int modelviewLoc = _curr.GetUniformLocation ("modelview");
+			GL.UniformMatrix4 (modelviewLoc, false, ref _modelview);
 		}
 
-		public void Translate(float X, float Y, float Z) {
-			_modelview = Matrix4.Mult(Matrix4.CreateTranslation(X, Y, Z), _modelview);
-			int modelviewLoc = _curr.GetUniformLocation("modelview");
-			GL.UniformMatrix4(modelviewLoc, false, ref _modelview);
+		public void Translate (float X, float Y, float Z)
+		{
+			_modelview = Matrix4.Mult (Matrix4.CreateTranslation (X, Y, Z), _modelview);
+			int modelviewLoc = _curr.GetUniformLocation ("modelview");
+			GL.UniformMatrix4 (modelviewLoc, false, ref _modelview);
 		}
 
-		public void Rotate(Vector3 Axis, float Angle) {
-			_modelview = Matrix4.Mult(Matrix4.CreateFromAxisAngle(Axis, Angle), _modelview);
-			int modelviewLoc = _curr.GetUniformLocation("modelview");
-			GL.UniformMatrix4(modelviewLoc, false, ref _modelview);
+		public void Rotate (Vector3 Axis, float Angle)
+		{
+			_modelview = Matrix4.Mult (Matrix4.CreateFromAxisAngle (Axis, Angle), _modelview);
+			int modelviewLoc = _curr.GetUniformLocation ("modelview");
+			GL.UniformMatrix4 (modelviewLoc, false, ref _modelview);
 		}
 
-		public void BindTexture(int id) {
-			int texloc = _curr.GetUniformLocation("tex");
-			GLUtil.PrintGLError("TexLoc");
-			GL.Uniform1(texloc, 0);
-			GLUtil.PrintGLError("TexUniform");
-			GL.ActiveTexture(TextureUnit.Texture0);
-			GLUtil.PrintGLError("TexActive");
-			GL.BindTexture(TextureTarget.Texture2D, id);
-			GLUtil.PrintGLError("TexBind");
+		public void BindTexture (int id)
+		{
+			int texloc = _curr.GetUniformLocation ("tex");
+			GLUtil.PrintGLError ("TexLoc");
+			GL.Uniform1 (texloc, 0);
+			GLUtil.PrintGLError ("TexUniform");
+			GL.ActiveTexture (TextureUnit.Texture0);
+			GLUtil.PrintGLError ("TexActive");
+			GL.BindTexture (TextureTarget.Texture2D, id);
+			GLUtil.PrintGLError ("TexBind");
 		}
 
-		public Graphics Get2DDrawGraphics() {
+		public Graphics Get2DDrawGraphics ()
+		{
 			_2dchanged = true;
-			return Graphics.FromImage(_2d);
+			return Graphics.FromImage (_2d);
 		}
 
-		void SetFogAndClear(OpenTK.Graphics.Color4 C) {
-			GL.ClearColor(OpenTK.Graphics.Color4.DeepSkyBlue);
+		public void SetHighlight (float HL)
+		{
+			GL.Uniform1 (_curr.GetUniformLocation ("highlight"), HL);
+		}
+
+		void SetFogAndClear (OpenTK.Graphics.Color4 C)
+		{
+			GL.ClearColor (OpenTK.Graphics.Color4.DeepSkyBlue);
 			float[] fogColor = {
 				OpenTK.Graphics.Color4.DeepSkyBlue.R,
 				OpenTK.Graphics.Color4.DeepSkyBlue.G,
 				OpenTK.Graphics.Color4.DeepSkyBlue.B,
 				OpenTK.Graphics.Color4.DeepSkyBlue.A
 			};
-			GL.Fog(FogParameter.FogColor, fogColor);
-			GL.Clear(ClearBufferMask.ColorBufferBit);
+			GL.Fog (FogParameter.FogColor, fogColor);
+			GL.Clear (ClearBufferMask.ColorBufferBit);
 		}
 
-		void LoadMatricies() {
-			int projectionLoc = _curr.GetUniformLocation("projection");
-			int modelviewLoc = _curr.GetUniformLocation("modelview");
-			GL.UniformMatrix4(projectionLoc, false, ref _projectionMatrix);
-			GL.UniformMatrix4(modelviewLoc, false, ref _modelview);
-			GLUtil.PrintGLError("Matricies");
+		void LoadMatricies ()
+		{
+			int projectionLoc = _curr.GetUniformLocation ("projection");
+			int modelviewLoc = _curr.GetUniformLocation ("modelview");
+			GL.UniformMatrix4 (projectionLoc, false, ref _projectionMatrix);
+			GL.UniformMatrix4 (modelviewLoc, false, ref _modelview);
+			GLUtil.PrintGLError ("Matricies");
 		}
 
-		public void Do2DDraw() {
+		public void Do2DDraw ()
+		{
 			int _sdrid;
-			GL.GetInteger(GetPName.CurrentProgram, out _sdrid);
-			GL.UseProgram(0);
+			GL.GetInteger (GetPName.CurrentProgram, out _sdrid);
+			GL.UseProgram (0);
 
 			if (_2dchanged) {
-				GLUtil.UpdateTexture(_2d, _2dTex);
+				GLUtil.UpdateTexture (_2d, _2dTex);
 				_2dchanged = false;
 			}
 
-			GL.Enable(EnableCap.Blend);
-			GL.Disable(EnableCap.DepthTest);
-			GL.MatrixMode(MatrixMode.Modelview);
-			Matrix4 magic = Matrix4.CreateOrthographicOffCenter(0, 1, 1, 0, -1, 1);
-			GL.LoadMatrix(ref magic);
-			GL.MatrixMode(MatrixMode.Projection);
-			GL.LoadIdentity();
+			GL.Enable (EnableCap.Blend);
+			GL.Disable (EnableCap.DepthTest);
+			GL.MatrixMode (MatrixMode.Modelview);
+			Matrix4 magic = Matrix4.CreateOrthographicOffCenter (0, 1, 1, 0, -1, 1);
+			GL.LoadMatrix (ref magic);
+			GL.MatrixMode (MatrixMode.Projection);
+			GL.LoadIdentity ();
 
-			GL.BindTexture(TextureTarget.Texture2D, _2dTex);
-			GL.Enable(EnableCap.Texture2D);
+			GL.BindTexture (TextureTarget.Texture2D, _2dTex);
+			GL.Enable (EnableCap.Texture2D);
 			
-			GL.BindBuffer(BufferTarget.ArrayBuffer, _2dvbo);
-			GL.InterleavedArrays(InterleavedArrayFormat.T2fC4fN3fV3f, 0, (IntPtr)0);
-			GL.DrawArrays(BeginMode.Quads, 0, 4);
+			GL.BindBuffer (BufferTarget.ArrayBuffer, _2dvbo);
+			GL.InterleavedArrays (InterleavedArrayFormat.T2fC4fN3fV3f, 0, (IntPtr)0);
+			GL.DrawArrays (BeginMode.Quads, 0, 4);
 
 			//XXX:Restore state
-			GL.UseProgram(_sdrid);
-			GL.Enable(EnableCap.DepthTest);
-			GL.Disable(EnableCap.Texture2D);
-			GL.Disable(EnableCap.Blend);
+			GL.UseProgram (_sdrid);
+			GL.Enable (EnableCap.DepthTest);
+			GL.Disable (EnableCap.Texture2D);
+			GL.Disable (EnableCap.Blend);
 		}
 		//XXX: Code duplication. Ideally, convert fullscreen draw to this. No time tho =(
-		public void Draw2DRects(LinkedList<Pair<int, int>> Rects) {
+		public void Draw2DRects (LinkedList<Pair<int, int>> Rects)
+		{
 			int _sdrid;
-			GL.GetInteger(GetPName.CurrentProgram, out _sdrid);
-			GL.UseProgram(0);
+			GL.GetInteger (GetPName.CurrentProgram, out _sdrid);
+			GL.UseProgram (0);
 
 			if (_2dchanged) {
-				GLUtil.UpdateTexture(_2d, _2dTex);
+				GLUtil.UpdateTexture (_2d, _2dTex);
 				_2dchanged = false;
 			}
 
-			GL.Enable(EnableCap.Texture2D);
-			GL.Disable(EnableCap.DepthTest);
-			GL.MatrixMode(MatrixMode.Modelview);
-			Matrix4 magic = Matrix4.CreateOrthographicOffCenter(0, _in.Width, _in.Height, 0, -1, 1);
-			GL.LoadMatrix(ref magic);
-			GL.MatrixMode(MatrixMode.Projection);
-			GL.LoadIdentity();
+			GL.Enable (EnableCap.Texture2D);
+			GL.Disable (EnableCap.DepthTest);
+			GL.MatrixMode (MatrixMode.Modelview);
+			Matrix4 magic = Matrix4.CreateOrthographicOffCenter (0, _in.Width, _in.Height, 0, -1, 1);
+			GL.LoadMatrix (ref magic);
+			GL.MatrixMode (MatrixMode.Projection);
+			GL.LoadIdentity ();
 
 			foreach (Pair<int, int> rect in Rects) {
-				GL.BindTexture(TextureTarget.Texture2D, rect.First);
+				GL.BindTexture (TextureTarget.Texture2D, rect.First);
 			
-				GL.BindBuffer(BufferTarget.ArrayBuffer, rect.Second);
-				GL.InterleavedArrays(InterleavedArrayFormat.T2fC4fN3fV3f, 0, (IntPtr)0);
-				GL.DrawArrays(BeginMode.Quads, 0, 4);
+				GL.BindBuffer (BufferTarget.ArrayBuffer, rect.Second);
+				GL.InterleavedArrays (InterleavedArrayFormat.T2fC4fN3fV3f, 0, (IntPtr)0);
+				GL.DrawArrays (BeginMode.Quads, 0, 4);
 			}
 
 			//XXX:Restore state
-			GL.UseProgram(_sdrid);
-			GL.Enable(EnableCap.DepthTest);
-			GL.Disable(EnableCap.Texture2D);
+			GL.UseProgram (_sdrid);
+			GL.Enable (EnableCap.DepthTest);
+			GL.Disable (EnableCap.Texture2D);
 		}
 	}
 }

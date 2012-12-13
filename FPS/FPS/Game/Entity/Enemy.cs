@@ -21,101 +21,114 @@ namespace FPS.Game.Entity {
 		static Pair<String, Pair<int, int>>[] _quotes;
 		//Local quote
 		Pair<String, Pair<int, int>> _quote;
-		public static readonly Ellipsoid BS = new Ellipsoid(new Vector3(1, 2, 1));
+		public static readonly Ellipsoid BS = new Ellipsoid (new Vector3 (1, 2, 1));
 		const int DEATH_ANIM_FRAMES = 20;
 		const int DEATH_SHOW_TIME = DEATH_ANIM_FRAMES + 600;
+		const int HURT_SHOW_FRAMES = 20;
 		int _deathAnimFrame;
+		int _hurtFrames;
 		bool _runDeath;
 
-		static Enemy() {
-			_mdl = OBJModelParser.GetInstance().Parse("res/mdl/enemy");
-			_garbage = new Bitmap(1, 1);
-			_garbageg = Graphics.FromImage(_garbage);
-			List<Pair<string, Pair<int, int>>> quotes = new List<Pair<string, Pair<int, int>>>();
+		static Enemy () {
+			_mdl = OBJModelParser.GetInstance ().Parse ("res/mdl/enemy");
+			_garbage = new Bitmap (1, 1);
+			_garbageg = Graphics.FromImage (_garbage);
+			List<Pair<string, Pair<int, int>>> quotes = new List<Pair<string, Pair<int, int>>> ();
 			using (StreamReader s = new StreamReader("res/screams.txt")) {
 				while (!s.EndOfStream) {
-					string q = s.ReadLine();
+					string q = s.ReadLine ();
 					while (q.EndsWith(@"\")) {
-						q = q.Substring(0, q.Length - 1);
+						q = q.Substring (0, q.Length - 1);
 						q += "\n";
-						q += s.ReadLine();
+						q += s.ReadLine ();
 					}
-					SizeF size = _garbageg.MeasureString(q, SystemFonts.DefaultFont);
-					Bitmap img = new Bitmap((int)size.Width + 6, (int)size.Height + 6);
-					Graphics g = Graphics.FromImage(img);
-					g.FillRectangle(Brushes.White, 0, 0, img.Width, img.Height);
-					g.DrawString(q, SystemFonts.DefaultFont, Brushes.Black, 3, 3);
-					g.Dispose();
-					Pair<string, Pair<int, int>> ins = new Pair<string, Pair<int, int>>();
+					SizeF size = _garbageg.MeasureString (q, SystemFonts.DefaultFont);
+					Bitmap img = new Bitmap ((int)size.Width + 6, (int)size.Height + 6);
+					Graphics g = Graphics.FromImage (img);
+					g.FillRectangle (Brushes.White, 0, 0, img.Width, img.Height);
+					g.DrawString (q, SystemFonts.DefaultFont, Brushes.Black, 3, 3);
+					g.Dispose ();
+					Pair<string, Pair<int, int>> ins = new Pair<string, Pair<int, int>> ();
 					ins.First = q;
-					ins.Second = new Pair<int, int>();
+					ins.Second = new Pair<int, int> ();
 					const int SCALE = 30;
 					const int SCALE2 = 2 * SCALE;
-					ins.Second.First = GLUtil.BuildRectangle(
+					ins.Second.First = GLUtil.BuildRectangle (
 							-(size.Width / SCALE2), -(size.Height / SCALE2),
 							(size.Width / SCALE), (size.Height / SCALE));
-					ins.Second.Second = GLUtil.CreateTexture(img);
-					quotes.Add(ins);
+					ins.Second.Second = GLUtil.CreateTexture (img);
+					quotes.Add (ins);
 				}
 			}
-			_garbageg.Dispose();
+			_garbageg.Dispose ();
 			_garbageg = null; //Prevent accidental use.
-			_quotes = quotes.ToArray();
-			_r = new Random();
+			_quotes = quotes.ToArray ();
+			_r = new Random ();
 		}
 
-		public Enemy(Vector3 Pos) : base(Pos, new AABB(1, 2, 1), 10) {
+		public Enemy (Vector3 Pos) : base(Pos, new AABB(1, 2, 1), 10) {
 			_deathAnimFrame = 0;
-			_quote = _quotes [_r.Next(_quotes.Length)];
+			_quote = _quotes [_r.Next (_quotes.Length)];
 		}
 
-		public void AI(World W) {
+		public void AI (World W) {
 			if (!_runDeath) {
-				IEntity pe = W.GetPlayer();
+				IEntity pe = W.GetPlayer ();
 
-				Vector3 delta = Vector3.Multiply(Vector3.Normalize(Vector3.Subtract(pe.Pos, _pos)), PlayerEntity.MOVE_SPEED * 0.9f);
-				ApplyForce(delta);
-				Yaw = (float)Math.Atan2(delta.X, delta.Z);
+				Vector3 delta = Vector3.Multiply (Vector3.Normalize (Vector3.Subtract (pe.Pos, _pos)), PlayerEntity.MOVE_SPEED * 0.9f);
+				ApplyForce (delta);
+				Yaw = (float)Math.Atan2 (delta.X, delta.Z);
 			}
 			if (Health < 0) {
+				if (!_runDeath)
+					W.BuggerDied ();
 				_noclip = true;
 				_runDeath = true;
 			}
 		}
 
-		public override void Render(WorldRenderer WR) {
-			WR.PushMatrix();
-			WR.Translate(_pos.X, _pos.Y, _pos.Z);
-			WR.PushMatrix();
-			WR.Rotate(Vector3.UnitY, Yaw);
+		public override void OnHurt (int Damage) {
+			_hurtFrames = 0;
+		}
+
+		public override void Render (WorldRenderer WR) {
+			WR.PushMatrix ();
+			WR.Translate (_pos.X, _pos.Y, _pos.Z);
+			WR.PushMatrix ();
+			WR.Rotate (Vector3.UnitY, Yaw);
 			if (_runDeath) {
 				int angleFrame = (_deathAnimFrame < DEATH_ANIM_FRAMES) ? _deathAnimFrame : DEATH_ANIM_FRAMES;
-				float angle = (float)(Math.PI * Math.Sin(angleFrame / (2.0 * DEATH_ANIM_FRAMES) * Math.PI) * 0.5);
-				WR.Rotate(Vector3.UnitX, angle);
+				float angle = (float)(Math.PI * Math.Sin (angleFrame / (2.0 * DEATH_ANIM_FRAMES) * Math.PI) * 0.5);
+				WR.Rotate (Vector3.UnitX, angle);
 				++_deathAnimFrame;
 				if (_deathAnimFrame > DEATH_SHOW_TIME) {
 					Dead = true;
 				}
 			}
-			_mdl.Render(WR);
-			WR.PopMatrix();
-			if (_runDeath) {
-				WR.Translate(0, 1.5f, 0);
-				WR.Rotate(Vector3.UnitX, (float)(Math.PI));
-				WR.Rotate(Vector3.UnitY, WR.Yaw);
-				WR.BindTexture(_quote.Second.Second);
-				GL.BindBuffer(BufferTarget.ArrayBuffer, _quote.Second.First);
-				GL.InterleavedArrays(InterleavedArrayFormat.T2fC4fN3fV3f, 0, (IntPtr)0);
-				GL.DrawArrays(BeginMode.Quads, 0, 4);
-				GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+			if (_hurtFrames < HURT_SHOW_FRAMES) {
+				++_hurtFrames;
+				WR.SetHighlight (2);
 			}
-			WR.PopMatrix();
+			_mdl.Render (WR);
+			WR.SetHighlight (1);
+			WR.PopMatrix ();
+			if (_runDeath) {
+				WR.Translate (0, 1.5f, 0);
+				WR.Rotate (Vector3.UnitX, (float)(Math.PI));
+				WR.Rotate (Vector3.UnitY, WR.Yaw);
+				WR.BindTexture (_quote.Second.Second);
+				GL.BindBuffer (BufferTarget.ArrayBuffer, _quote.Second.First);
+				GL.InterleavedArrays (InterleavedArrayFormat.T2fC4fN3fV3f, 0, (IntPtr)0);
+				GL.DrawArrays (BeginMode.Quads, 0, 4);
+				GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+			}
+			WR.PopMatrix ();
 		}
 
-		public override void OnCollide(IEntity With) {
+		public override void OnCollide (IEntity With) {
 			PlayerEntity pe = With as PlayerEntity;
 			if (pe != null) {
-				pe.Hurt(1);
+				pe.Hurt (1);
 			}
 		}
 	}

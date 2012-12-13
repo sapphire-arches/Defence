@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using FPS.Util;
 using FPS.Game;
 using FPS.Game.Entity;
 using FPS.GLInterface;
@@ -103,11 +104,7 @@ namespace FPS.Render {
 			_2dTex = GLUtil.CreateTexture(_2d);
 			_oldwidth = 0;
 			_oldheight = 0;
-			_2dvbo = GL.GenBuffer();
-			Vertex[] d = BuildSquare();
-			GL.BindBuffer(BufferTarget.ArrayBuffer, _2dvbo);
-			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(d.Length * Vertex.Size), d, BufferUsageHint.StaticDraw);
-			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+			_2dvbo = GLUtil.BuildRectangle(0, 0, 1, 1);
 		}
 
 		public void Render() {
@@ -217,7 +214,6 @@ namespace FPS.Render {
 		}
 
 		public void Do2DDraw() {
-			//Console.WriteLine(_2d.GetPixel(400, 300));
 			int _sdrid;
 			GL.GetInteger(GetPName.CurrentProgram, out _sdrid);
 			GL.UseProgram(0);
@@ -248,34 +244,37 @@ namespace FPS.Render {
 			GL.Disable(EnableCap.Texture2D);
 			GL.Disable(EnableCap.Blend);
 		}
+		//XXX: Code duplication. Ideally, convert fullscreen draw to this. No time tho =(
+		public void Draw2DRects(LinkedList<Pair<int, int>> Rects) {
+			int _sdrid;
+			GL.GetInteger(GetPName.CurrentProgram, out _sdrid);
+			GL.UseProgram(0);
 
-		Vertex[] BuildSquare() {
-			Vertex[] tr = new Vertex[4];
-			for (int i = 0; i < tr.Length; ++i) {
-				tr [i] = new Vertex();
-				tr [i].Color = new Vector4(1, 1, 1, 1);
+			if (_2dchanged) {
+				GLUtil.UpdateTexture(_2d, _2dTex);
+				_2dchanged = false;
 			}
-			tr [0].Position.X = 0;
-			tr [0].Position.Y = 0;
-			tr [0].TexCoord.X = 0;
-			tr [0].TexCoord.Y = 0;
-			
-			tr [1].Position.X = 0;
-			tr [1].Position.Y = 1;
-			tr [1].TexCoord.X = 0;
-			tr [1].TexCoord.Y = 1;
-			
-			tr [2].Position.X = 1;
-			tr [2].Position.Y = 1;
-			tr [2].TexCoord.X = 1;
-			tr [2].TexCoord.Y = 1;
-			
-			tr [3].Position.X = 1;
-			tr [3].Position.Y = 0;
-			tr [3].TexCoord.X = 1;
-			tr [3].TexCoord.Y = 0;
 
-			return tr;
+			GL.Enable(EnableCap.Texture2D);
+			GL.Disable(EnableCap.DepthTest);
+			GL.MatrixMode(MatrixMode.Modelview);
+			Matrix4 magic = Matrix4.CreateOrthographicOffCenter(0, _in.Width, _in.Height, 0, -1, 1);
+			GL.LoadMatrix(ref magic);
+			GL.MatrixMode(MatrixMode.Projection);
+			GL.LoadIdentity();
+
+			foreach (Pair<int, int> rect in Rects) {
+				GL.BindTexture(TextureTarget.Texture2D, rect.First);
+			
+				GL.BindBuffer(BufferTarget.ArrayBuffer, rect.Second);
+				GL.InterleavedArrays(InterleavedArrayFormat.T2fC4fN3fV3f, 0, (IntPtr)0);
+				GL.DrawArrays(BeginMode.Quads, 0, 4);
+			}
+
+			//XXX:Restore state
+			GL.UseProgram(_sdrid);
+			GL.Enable(EnableCap.DepthTest);
+			GL.Disable(EnableCap.Texture2D);
 		}
 	}
 }

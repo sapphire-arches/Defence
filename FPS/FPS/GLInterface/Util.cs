@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
 namespace FPS.GLInterface {
@@ -45,6 +46,39 @@ namespace FPS.GLInterface {
 			To.UnlockBits(data);
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+		}
+
+		public static int BuildRectangle(float X, float Y, float Width, float Height) {
+			Vertex[] d = new Vertex[4];
+			for (int i = 0; i < d.Length; ++i) {
+				d [i] = new Vertex();
+				d [i].Color = new Vector4(1, 1, 1, 1);
+			}
+			d [0].Position.X = X;
+			d [0].Position.Y = Y;
+			d [0].TexCoord.X = 0;
+			d [0].TexCoord.Y = 0;
+			
+			d [1].Position.X = X;
+			d [1].Position.Y = Y + Height;
+			d [1].TexCoord.X = 0;
+			d [1].TexCoord.Y = 1;
+			
+			d [2].Position.X = X + Width;
+			d [2].Position.Y = Y + Height;
+			d [2].TexCoord.X = 1;
+			d [2].TexCoord.Y = 1;
+			
+			d [3].Position.X = X + Width;
+			d [3].Position.Y = Y;
+			d [3].TexCoord.X = 1;
+			d [3].TexCoord.Y = 0;
+
+			int tr = GL.GenBuffer();
+			GL.BindBuffer(BufferTarget.ArrayBuffer, tr);
+			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(d.Length * Vertex.Size), d, BufferUsageHint.StaticDraw);
+			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+			return tr;
 		}
 	}
 }

@@ -64,7 +64,7 @@ namespace FPS.Game.Entity {
 			if (_swingFrame < SWING_FRAMES)
 				++_swingFrame;
 			ApplyForce(moveForce);
-			if (Health < 0)
+			if (Health <= 0)
 				Dead = true;
 		}
 

@@ -1,23 +1,72 @@
 using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using OpenTK;
+using OpenTK.Graphics.OpenGL;
 using FPS.Util;
 using FPS.Render;
 using FPS.GLInterface;
 
 namespace FPS.Game.Entity { 
 	public class Enemy : IEntity {
+		//Render model
 		static Model _mdl;
+		//General purpose RNG
+		static Random _r;
+		//Used to measure strings.
+		static Bitmap _garbage;
+		static Graphics _garbageg;
+		//Format <Name, <BufferID, TextureID>>
+		static Pair<String, Pair<int, int>>[] _quotes;
+		//Local quote
+		Pair<String, Pair<int, int>> _quote;
 		public static readonly Ellipsoid BS = new Ellipsoid(new Vector3(1, 2, 1));
 		const int DEATH_ANIM_FRAMES = 20;
 		const int DEATH_SHOW_TIME = DEATH_ANIM_FRAMES + 600;
 		int _deathAnimFrame;
 		bool _runDeath;
 
-		public Enemy(Vector3 Pos) : base(Pos, new AABB(1, 2, 1), 10) {
-			if (_mdl == null) {
-				_mdl = OBJModelParser.GetInstance().Parse("res/mdl/enemy");
+		static Enemy() {
+			_mdl = OBJModelParser.GetInstance().Parse("res/mdl/enemy");
+			_garbage = new Bitmap(1, 1);
+			_garbageg = Graphics.FromImage(_garbage);
+			List<Pair<string, Pair<int, int>>> quotes = new List<Pair<string, Pair<int, int>>>();
+			using (StreamReader s = new StreamReader("res/screams.txt")) {
+				while (!s.EndOfStream) {
+					string q = s.ReadLine();
+					while (q.EndsWith(@"\")) {
+						q = q.Substring(0, q.Length - 1);
+						q += "\n";
+						q += s.ReadLine();
+					}
+					SizeF size = _garbageg.MeasureString(q, SystemFonts.DefaultFont);
+					Bitmap img = new Bitmap((int)size.Width + 6, (int)size.Height + 6);
+					Graphics g = Graphics.FromImage(img);
+					g.FillRectangle(Brushes.White, 0, 0, img.Width, img.Height);
+					g.DrawString(q, SystemFonts.DefaultFont, Brushes.Black, 3, 3);
+					g.Dispose();
+					Pair<string, Pair<int, int>> ins = new Pair<string, Pair<int, int>>();
+					ins.First = q;
+					ins.Second = new Pair<int, int>();
+					const int SCALE = 30;
+					const int SCALE2 = 2 * SCALE;
+					ins.Second.First = GLUtil.BuildRectangle(
+							-(size.Width / SCALE2), -(size.Height / SCALE2),
+							(size.Width / SCALE), (size.Height / SCALE));
+					ins.Second.Second = GLUtil.CreateTexture(img);
+					quotes.Add(ins);
+				}
 			}
+			_garbageg.Dispose();
+			_garbageg = null; //Prevent accidental use.
+			_quotes = quotes.ToArray();
+			_r = new Random();
+		}
+
+		public Enemy(Vector3 Pos) : base(Pos, new AABB(1, 2, 1), 10) {
 			_deathAnimFrame = 0;
+			_quote = _quotes [_r.Next(_quotes.Length)];
 		}
 
 		public void AI(World W) {
@@ -37,6 +86,7 @@ namespace FPS.Game.Entity {
 		public override void Render(WorldRenderer WR) {
 			WR.PushMatrix();
 			WR.Translate(_pos.X, _pos.Y, _pos.Z);
+			WR.PushMatrix();
 			WR.Rotate(Vector3.UnitY, Yaw);
 			if (_runDeath) {
 				int angleFrame = (_deathAnimFrame < DEATH_ANIM_FRAMES) ? _deathAnimFrame : DEATH_ANIM_FRAMES;
@@ -48,6 +98,17 @@ namespace FPS.Game.Entity {
 				}
 			}
 			_mdl.Render(WR);
+			WR.PopMatrix();
+			if (_runDeath) {
+				WR.Translate(0, 1.5f, 0);
+				WR.Rotate(Vector3.UnitX, (float)(Math.PI));
+				WR.Rotate(Vector3.UnitY, WR.Yaw);
+				WR.BindTexture(_quote.Second.Second);
+				GL.BindBuffer(BufferTarget.ArrayBuffer, _quote.Second.First);
+				GL.InterleavedArrays(InterleavedArrayFormat.T2fC4fN3fV3f, 0, (IntPtr)0);
+				GL.DrawArrays(BeginMode.Quads, 0, 4);
+				GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+			}
 			WR.PopMatrix();
 		}
 

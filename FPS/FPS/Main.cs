@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Diagnostics;
 using System.IO;
@@ -31,12 +32,11 @@ namespace FPS {
 		bool _drawFull2D;
 		bool _drawIntro;
 		bool _drawDead;
+		LinkedList<Pair<int, int>> _rects;
+		Bitmap _healthbar;
+		int _healthbarID;
 
 		public MainClass() : base(800, 600, OpenTK.Graphics.GraphicsMode.Default, "Defend Rome") {
-			//TESTING CODE
-			Ellipsoid el = new Ellipsoid(new Vector3(1, 1, 1));
-			Console.WriteLine(el.RayIntersection(new Vector3(10, 0, 0), new Vector3(-1, 0, 0)));
-			//END TESTING CODE
 		}
 
 		protected override void OnLoad(EventArgs args) {
@@ -55,6 +55,7 @@ namespace FPS {
 			}
 			_drawFull2D = true;
 			_drawIntro = true;
+
 			//GFX setup
 			_camOffset = new Vector3();
 			_ren = new WorldRenderer(this, _world, (float)Width / Height);
@@ -70,6 +71,15 @@ namespace FPS {
 			GL.Fog(FogParameter.FogColor, fogColor);
 			GL.Fog(FogParameter.FogEnd, WorldRenderer.MAX_DEPTH);
 			GL.Fog(FogParameter.FogStart, 10f);
+
+			//2D draw setup
+			_healthbar = new Bitmap(100, 25);
+			_rects = new LinkedList<Pair<int, int>>();
+			_healthbarID = GLUtil.CreateTexture(_healthbar);
+			_rects.AddFirst(new Pair<int, int>(
+				_healthbarID,
+				GLUtil.BuildRectangle(0, 0, 100, 25))
+			);
 
 			//Input setup.
 			_mouseDelta = new Vector2(0, 0);
@@ -155,9 +165,19 @@ namespace FPS {
 					}
 				}
 				if (!playerFound) {
+					_deadText = String.Format(_deadText, _world.BuggersKilled);
 					_drawIntro = false;
 					_drawDead = true;
 					_drawFull2D = true;
+				} else {
+					//Update healthbar bitmap.
+					Graphics g = Graphics.FromImage(_healthbar);
+					g.FillRectangle(Brushes.Gray, 0, 0, 100, 25);
+					int hbw = (int)((_pe.Health / 10.0) * 98);
+					g.FillRectangle(Brushes.Green, 1, 1, hbw, 23);
+					g.FillRectangle(Brushes.Red, 1 + hbw, 1, 98 - hbw, 23);
+					g.Dispose();
+					GLUtil.UpdateTexture(_healthbar, _healthbarID);
 				}
 			}
 		}
@@ -179,6 +199,8 @@ namespace FPS {
 			_ren.Render();
 			if (_drawFull2D) {
 				_ren.Do2DDraw();
+			} else {
+				_ren.Draw2DRects(_rects);
 			}
 			GLUtil.PrintGLError("Main");
 			++_frame;

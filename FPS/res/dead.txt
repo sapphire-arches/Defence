@@ -1,4 +1,7 @@
-Sorry, you died. =(
+You died =(. You got {0} of the buggers first though!
 I hope you learned some neat things from the dying screams of your enemies.
 The full list can be found in the game folder, under "res". The filename is
-screams.txt
+screams.txt. The format may look a little weird, but is very simple, Any line
+ending with \ continues onto the next line. Otherwise, it's the start of a 
+new quote.
+Close the game and reopen it to replay!

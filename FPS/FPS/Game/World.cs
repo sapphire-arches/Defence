@@ -10,6 +10,7 @@ namespace FPS.Game {
 		private HeightMap _terrain;
 		private LinkedList<IEntity> _ents;
 		private PlayerEntity _pe;
+		private int _buggersKilled;
 
 		public HeightMap Terrain {
 			get { return _terrain; }
@@ -21,11 +22,17 @@ namespace FPS.Game {
 			private set { _ents = value; }
 		}
 
+		public int BuggersKilled {
+			get { return _buggersKilled;}
+			private set { _buggersKilled = value;}
+		}
+
 		public World(HeightMap Terrain, PlayerEntity pe) {
 			_terrain = Terrain;
 			_pe = pe;
 			_ents = new LinkedList<IEntity>();
 			_ents.AddFirst(pe);
+			_buggersKilled = -1; //You get a free point for dying. Can't be having that!
 		}
 
 		public void Tick(float Delta) {
@@ -36,6 +43,7 @@ namespace FPS.Game {
 				if (ent.Dead) {
 					//Remove.
 					curr.List.Remove(curr);
+					++_buggersKilled;
 				}
 
 				curr = curr.Next;

@@ -1,0 +1,4 @@
+Sorry, you died. =(
+I hope you learned some neat things from the dying screams of your enemies.
+The full list can be found in the game folder, under "res". The filename is
+screams.txt

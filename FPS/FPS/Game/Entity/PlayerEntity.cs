@@ -19,7 +19,7 @@ namespace FPS.Game.Entity {
 		int _walkFrame;
 		Model _sword;
 
-		public PlayerEntity(Vector3 Pos) : base(Pos, new AABB(1, 2, 1)) {
+		public PlayerEntity(Vector3 Pos) : base(Pos, new AABB(1, 2, 1), 10) {
 			_walkFrame = 0;
 			_swingFrame = 0;
 			_sword = OBJModelParser.GetInstance().Parse("res/mdl/sword");
@@ -64,10 +64,40 @@ namespace FPS.Game.Entity {
 			if (_swingFrame < SWING_FRAMES)
 				++_swingFrame;
 			ApplyForce(moveForce);
+			if (Health < 0)
+				Dead = true;
 		}
 
-		public void SwingSword() {
-			_swingFrame = 0;
+		public void SwingSword(World W) {
+			if (_swingFrame >= SWING_FRAMES) {
+				_swingFrame = 0;
+				Vector3 off = new Vector3(0.5f, 1.5f, 0.5f);
+				Vector3 moff = new Vector3(0.5f, 1, 0.5f);
+				Vector3 rpos = _pos + off;
+				Vector4 rdir = new Vector4(-Vector4.UnitZ);
+				Matrix4 trans = Matrix4.Mult(
+			                 Matrix4.CreateFromAxisAngle(Vector3.UnitX, Pitch),
+			                 Matrix4.CreateFromAxisAngle(Vector3.UnitY, -Yaw)
+				);
+				rdir = Vector4.Transform(rdir, trans);
+				rdir.Normalize();
+				double min = 10;
+				Enemy dmg = null;
+				foreach (IEntity ent in W.Ents) {
+					Enemy e = ent as Enemy;
+					if (e != null) {
+						Enemy.BS.Pos = e.Pos + moff;
+						double d = Enemy.BS.RayIntersection(rpos, rdir.Xyz);
+						if (!Double.IsNaN(d) && d > 0 && d < min) {
+							min = d;
+							dmg = e;
+						}
+					}
+				}
+				if (dmg != null) {
+					dmg.Hurt(10);
+				}
+			}
 		}
 
 		public float GetEyeOffset() {
@@ -90,6 +120,10 @@ namespace FPS.Game.Entity {
 			In.Rotate(Vector3.UnitZ, arange * (float)Math.Cos(afreq * In.GetFrame()) + swingZ);
 			_sword.Render(In);
 			In.PopMatrix();
+		}
+
+		public override void OnCollide(IEntity With) {
+			//Do nothing.
 		}
 	}
 }

@@ -14,10 +14,13 @@ namespace FPS.Game.Entity {
 		protected Vector3 _acc;
 		protected float _delta;
 		protected AABB _bounds;
+		protected bool _noclip;
 		int _health;
 		float _pitch;
 		float _yaw;
 		bool _onGround;
+		bool _dead;
+		int _hurtCooldown;
 
 		public float Pitch {
 			get { return _pitch; }
@@ -58,11 +61,18 @@ namespace FPS.Game.Entity {
 			private set { _health = value;}
 		}
 
-		public IEntity(Vector3 Pos, AABB Bounds) {
+		public bool Dead {
+			get { return _dead;}
+			set { _dead = value;}
+		}
+
+		public IEntity(Vector3 Pos, AABB Bounds, int MaxHealth) {
 			_pos = Pos;
 			_bounds = Bounds;
 			_vel = new Vector3(0, 0, 0);
 			_acc = new Vector3(0, 0, 0);
+			_hurtCooldown = 0;
+			_health = MaxHealth;
 		}
 
 		public void Tick(World W, float Delta) {
@@ -76,6 +86,8 @@ namespace FPS.Game.Entity {
 				if (ent != this) {
 					bool colide = this.Collides(ent);
 					if (colide) {
+						this.OnCollide(ent);
+						ent.OnCollide(this);
 					}
 					move &= !colide;
 				}
@@ -101,6 +113,8 @@ namespace FPS.Game.Entity {
 			if (-BOUNDS_SIZE > Pos.Z || _pos.Z > BOUNDS_SIZE)
 				_pos.Z = Math.Sign(_pos.Z) * BOUNDS_SIZE;
 			_delta = Delta;
+			if (_hurtCooldown > 0)
+				--_hurtCooldown;
 		}
 
 		public void ApplyForce(Vector3 Force) {
@@ -110,10 +124,19 @@ namespace FPS.Game.Entity {
 		public bool Collides(IEntity Other) {
 			_bounds.Pos = _pos - new Vector3(_bounds.Width / 2, 0, _bounds.Depth / 2);
 			Other._bounds.Pos = Other._pos - new Vector3(Other._bounds.Width / 2, 0, Other._bounds.Depth / 2);
-			return _bounds.Intersects(Other._bounds);
+			return !Other._noclip && _bounds.Intersects(Other._bounds);
+		}
+
+		public void Hurt(int Damage) {
+			if (_hurtCooldown <= 0) {
+				_health -= Damage;
+				_hurtCooldown = 10;
+				Console.WriteLine("{0} took {1} damage, health is now {2}", this, Damage, this.Health);
+			}
 		}
 
 		public abstract void Render(WorldRenderer In);
+		public abstract void OnCollide(IEntity With);
 
 		public override string ToString() {
 			return string.Format("{0} {1}", Pos, GetType());

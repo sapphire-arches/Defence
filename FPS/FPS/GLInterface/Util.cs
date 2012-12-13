@@ -19,7 +19,7 @@ namespace FPS.GLInterface {
 			BitmapData data = Texture.LockBits(
 				new Rectangle(0, 0, Texture.Width, Texture.Height),
 				ImageLockMode.ReadOnly,
-				System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+				System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
 			int texid = GL.GenTexture();
 			GL.BindTexture(TextureTarget.Texture2D, texid);
 			GL.TexImage2D(TextureTarget.Texture2D, 0,
@@ -36,7 +36,7 @@ namespace FPS.GLInterface {
 			BitmapData data = To.LockBits(
 				new Rectangle(0, 0, To.Width, To.Height),
 				ImageLockMode.ReadOnly,
-				System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+				System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
 			int texid = Texture;
 			GL.BindTexture(TextureTarget.Texture2D, texid);
 			GL.TexImage2D(TextureTarget.Texture2D, 0,

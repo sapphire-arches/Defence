@@ -217,7 +217,7 @@ namespace FPS.Render {
 		}
 
 		public void Do2DDraw() {
-			GL.Enable(EnableCap.Blend);
+			//Console.WriteLine(_2d.GetPixel(400, 300));
 			int _sdrid;
 			GL.GetInteger(GetPName.CurrentProgram, out _sdrid);
 			GL.UseProgram(0);
@@ -227,6 +227,7 @@ namespace FPS.Render {
 				_2dchanged = false;
 			}
 
+			GL.Enable(EnableCap.Blend);
 			GL.Disable(EnableCap.DepthTest);
 			GL.MatrixMode(MatrixMode.Modelview);
 			Matrix4 magic = Matrix4.CreateOrthographicOffCenter(0, 1, 1, 0, -1, 1);

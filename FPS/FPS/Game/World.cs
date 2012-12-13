@@ -26,14 +26,19 @@ namespace FPS.Game {
 			_pe = pe;
 			_ents = new LinkedList<IEntity>();
 			_ents.AddFirst(pe);
-			_ents.AddFirst(new Enemy(new Vector3(10, Terrain [0, 0], 10)));
-			_ents.AddFirst(new Enemy(new Vector3(10, Terrain [0, 0], -10.1f)));
-			_ents.AddFirst(new Enemy(new Vector3(-10, Terrain [0, 0], -10.1f)));
 		}
 
 		public void Tick(float Delta) {
-			foreach (IEntity ent in _ents) {
+			LinkedListNode<IEntity> curr = _ents.First;
+			while (curr != null) {
+				IEntity ent = curr.Value;
 				ent.Tick(this, Delta);
+				if (ent.Dead) {
+					//Remove.
+					curr.List.Remove(curr);
+				}
+
+				curr = curr.Next;
 			}
 		}
 

@@ -1,0 +1,17 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="FPS/Game/Entity/Enemy.cs">
+    <Files>
+      <File FileName="FPS/Main.cs" Line="108" Column="31" />
+      <File FileName="FPS/Game/Entity/Enemy.cs" Line="27" Column="33" />
+      <File FileName="res/shader/base.frag" Line="14" Column="32" />
+      <File FileName="FPS/Render/WorldRenderer.cs" Line="212" Column="61" />
+      <File FileName="FPS/GLInterface/ShaderProgram.cs" Line="19" Column="38" />
+      <File FileName="FPS/Game/Entity/IEntity.cs" Line="135" Column="21" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

@@ -1,0 +1,43 @@
+﻿<Properties GitUserInfo="UsingGIT">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="FPS/res/screams.txt">
+    <Files>
+      <File FileName="FPS/res/screams.txt" Line="23" Column="36" />
+      <File FileName="FPS/FPS/Render/WorldRenderer.cs" Line="257" Column="4" />
+      <File FileName="FPS/FPS/Main.cs" Line="81" Column="18" />
+      <File FileName="FPS/FPS/Game/World.cs" Line="27" Column="42" />
+      <File FileName="FPS/FPS/Game/Entity/Enemy.cs" Line="63" Column="31" />
+      <File FileName="FPS/res/dead.txt" Line="6" Column="2" />
+      <File FileName="FPS/FPS/Game/Entity/PlayerEntity.cs" Line="103" Column="41" />
+      <File FileName="FPS/FPS/GLInterface/Shader.cs" Line="23" Column="12" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="FPS" expanded="True">
+            <Node name="FPS" expanded="True">
+              <Node name="Game" expanded="True">
+                <Node name="Entity" expanded="True" />
+              </Node>
+              <Node name="GLInterface" expanded="True" />
+              <Node name="Render" expanded="True" />
+              <Node name="Util" expanded="True" />
+            </Node>
+            <Node name="res" expanded="True">
+              <Node name="screams.txt" selected="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="ClassPad">
+        <State expanded="True" selected="True">
+          <Node name="FPS" expanded="True" />
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

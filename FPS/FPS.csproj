@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="3.5" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{BAA11384-9F0A-484A-93B1-342E7E0BAD37}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>FPS</RootNamespace>
+    <AssemblyName>FPS</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Reference Include="OpenTK.GLControl">
+      <HintPath>..\..\..\Downloads\libs\opentk\trunk\Binaries\OpenTK\Release\OpenTK.GLControl.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK">
+      <HintPath>..\..\..\Downloads\libs\opentk\trunk\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="FPS\GLInterface\ShaderProgram.cs" />
+    <Compile Include="FPS\Main.cs" />
+    <Compile Include="FPS\Game\World.cs" />
+    <Compile Include="FPS\Render\WorldRenderer.cs" />
+    <Compile Include="FPS\Render\HeightmapRenderer.cs" />
+    <Compile Include="FPS\GLInterface\VertexArray.cs" />
+    <Compile Include="FPS\GLInterface\Util.cs" />
+    <Compile Include="FPS\Util\Perlin2D.cs" />
+    <Compile Include="FPS\Game\Entity\IEntity.cs" />
+    <Compile Include="FPS\Game\Entity\PlayerEntity.cs" />
+    <Compile Include="FPS\Game\HMap\HeightMap.cs" />
+    <Compile Include="FPS\Game\HMap\Chunk.cs" />
+    <Compile Include="FPS\Game\HMap\ChunkCache.cs" />
+    <Compile Include="FPS\Render\RenderChunk.cs" />
+    <Compile Include="FPS\Game\HMap\Generator.cs" />
+    <Compile Include="FPS\GLInterface\Shader.cs" />
+    <Compile Include="FPS\GLInterface\Model.cs" />
+    <Compile Include="FPS\Game\Entity\Enemy.cs" />
+    <Compile Include="FPS\Util\Ellipsoid.cs" />
+    <Compile Include="FPS\Util\Pair.cs" />
+    <Compile Include="FPS\GLInterface\Rect2D.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="res\" />
+    <Folder Include="FPS\" />
+    <Folder Include="FPS\Render\" />
+    <Folder Include="FPS\Util\" />
+    <Folder Include="FPS\Game\Entity\" />
+    <Folder Include="FPS\Game\HMap\" />
+    <Folder Include="res\mdl\" />
+    <Folder Include="res\shader\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="res\shader\base.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="res\shader\base.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\mdl\sword.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="res\mdl\sword.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="res\shader\underwater.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="res\map.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="res\shader\water.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="res\shader\simple.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="res\mdl\enemy.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="res\mdl\enemy.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="res\readme.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="res\dead.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="res\screams.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

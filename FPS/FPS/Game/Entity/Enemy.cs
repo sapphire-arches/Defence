@@ -6,6 +6,7 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using FPS.Util;
 using FPS.Render;
+using FPS.Render.Flat;
 using FPS.GLInterface;
 
 namespace FPS.Game.Entity { 

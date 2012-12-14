@@ -1,8 +1,9 @@
 using System;
 using System.Drawing;
+using FPS.GLInterface;
 using OpenTK.Graphics.OpenGL;
 
-namespace FPS.GLInterface {
+namespace FPS.Render.Flat {
 	public class Rect2D {
 		int _vboid;
 		int _texid;

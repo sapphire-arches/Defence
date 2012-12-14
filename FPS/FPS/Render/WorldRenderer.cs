@@ -5,6 +5,7 @@ using FPS.Util;
 using FPS.Game;
 using FPS.Game.Entity;
 using FPS.GLInterface;
+using FPS.Render.Flat;
 using OpenTK.Graphics.OpenGL;
 using OpenTK;
 
@@ -30,10 +31,6 @@ namespace FPS.Render {
 		Vector3 _pos;
 		Stack<Matrix4> _mviewstack;
 		MainClass _in;
-		Bitmap _2d;
-		int _2dTex;
-		int _2dvbo;
-		bool _2dchanged;
 		int _oldwidth, _oldheight;
 
 		public float Pitch {
@@ -100,19 +97,15 @@ namespace FPS.Render {
 			_pos = new Vector3(10, 2, 10);
 			_mviewstack = new Stack<Matrix4>();
 			_in = In;
-			_2d = new Bitmap(_in.Width, _in.Height);
-			_2dTex = GLUtil.CreateTexture(_2d);
 			_oldwidth = 0;
 			_oldheight = 0;
-			_2dvbo = GLUtil.BuildRectangle(0, 0, 1, 1);
 		}
 
 		public void Render() {
 			if (_oldwidth != _in.Width || _oldheight != _in.Height) {
-				_2d = new Bitmap(_in.Width, _in.Height);
+				Aspect = (float)_in.Width / _in.Height;
 				_oldwidth = _in.Width;
 				_oldheight = _in.Height;
-				_2dchanged = true;
 			}
 
 			GLUtil.PrintGLError("Prerender");
@@ -145,10 +138,6 @@ namespace FPS.Render {
 			LoadMatricies();
 			_hmap.RenderWater(this, _pos.X, _pos.Z);
 			GL.Disable(EnableCap.Blend);
-		}
-
-		public int GetFrame() {
-			return _in.GetFrame();
 		}
 
 		public void PushMatrix() {
@@ -190,11 +179,6 @@ namespace FPS.Render {
 			GLUtil.PrintGLError("TexBind");
 		}
 
-		public Graphics Get2DDrawGraphics() {
-			_2dchanged = true;
-			return Graphics.FromImage(_2d);
-		}
-
 		public void SetHighlight(float HL) {
 			GL.Uniform1(_curr.GetUniformLocation("highlight"), HL);
 		}
@@ -219,38 +203,10 @@ namespace FPS.Render {
 			GLUtil.PrintGLError("Matricies");
 		}
 
-		public void Do2DDraw() {
-			int _sdrid;
-			GL.GetInteger(GetPName.CurrentProgram, out _sdrid);
-			GL.UseProgram(0);
-
-			if (_2dchanged) {
-				GLUtil.UpdateTexture(_2d, _2dTex);
-				_2dchanged = false;
-			}
-
-			GL.Enable(EnableCap.Blend);
-			GL.Disable(EnableCap.DepthTest);
-			GL.MatrixMode(MatrixMode.Modelview);
-			Matrix4 magic = Matrix4.CreateOrthographicOffCenter(0, 1, 1, 0, -1, 1);
-			GL.LoadMatrix(ref magic);
-			GL.MatrixMode(MatrixMode.Projection);
-			GL.LoadIdentity();
-
-			GL.BindTexture(TextureTarget.Texture2D, _2dTex);
-			GL.Enable(EnableCap.Texture2D);
-			
-			GL.BindBuffer(BufferTarget.ArrayBuffer, _2dvbo);
-			GL.InterleavedArrays(InterleavedArrayFormat.T2fC4fN3fV3f, 0, (IntPtr)0);
-			GL.DrawArrays(BeginMode.Quads, 0, 4);
-
-			//XXX:Restore state
-			GL.UseProgram(_sdrid);
-			GL.Enable(EnableCap.DepthTest);
-			GL.Disable(EnableCap.Texture2D);
-			GL.Disable(EnableCap.Blend);
+		public int GetFrame() {
+			return _in.Frame;
 		}
-		//XXX: Code duplication. Ideally, convert fullscreen draw to this.
+
 		public void Draw2DRects(LinkedList<Rect2D> Rects) {
 			int _sdrid;
 			GL.GetInteger(GetPName.CurrentProgram, out _sdrid);

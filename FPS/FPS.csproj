@@ -63,7 +63,12 @@
     <Compile Include="FPS\Game\Entity\Enemy.cs" />
     <Compile Include="FPS\Util\Ellipsoid.cs" />
     <Compile Include="FPS\Util\Pair.cs" />
-    <Compile Include="FPS\GLInterface\Rect2D.cs" />
+    <Compile Include="FPS\Framework\IGameState.cs" />
+    <Compile Include="FPS\Game\PlayState.cs" />
+    <Compile Include="FPS\Framework\IntroState.cs" />
+    <Compile Include="FPS\Framework\DeadState.cs" />
+    <Compile Include="FPS\Render\Flat\FullScreenTextRender.cs" />
+    <Compile Include="FPS\Render\Flat\Rect2D.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="res\" />
@@ -74,6 +79,8 @@
     <Folder Include="FPS\Game\HMap\" />
     <Folder Include="res\mdl\" />
     <Folder Include="res\shader\" />
+    <Folder Include="FPS\Framework\" />
+    <Folder Include="FPS\Render\Flat\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="res\shader\base.frag">
